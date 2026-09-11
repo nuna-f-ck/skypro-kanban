@@ -1,19 +1,18 @@
 import Card from '../Card/Card';
 
-export function Column({ title, cards = [] }) {
+export function Column({ status, cards = [] }) {
   return (
     <div className="main__column column">
       <div className="column__title">
-        <p>{title}</p>
+        <p>{status}</p>
       </div>
 
       <div className="cards">
-        {cards.map((card, index) => (
+        {cards.filter((card) => card.status == status).map((card) => (
           <Card
-            key={`${title}-${index}`}
+            key={card.id}
             title={card.title}
-            theme={card.theme}
-            themeName={card.themeName}
+            topic={card.topic}
             date={card.date}
           />
         ))}
