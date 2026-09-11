@@ -1,6 +1,7 @@
-export function PopUser() {
+export function PopUser({popState}) {
   return (
-    <div className="header__pop-user-set pop-user-set" id="user-set-target">
+    <div>
+      {popState ? (<div className="header__pop-user-set pop-user-set">
       <p className="pop-user-set__name">Ivan Ivanov</p>
 
       <p className="pop-user-set__mail">
@@ -20,6 +21,8 @@ export function PopUser() {
       <button type="button" className="_hover03">
         <a href="#popExit">Выйти</a>
       </button>
+    </div>) :
+  (null)}
     </div>
   );
 }
