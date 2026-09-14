@@ -1,10 +1,18 @@
-import Header from './components/Header/Header';
-import Main from './components/Main/Main';
-import PopBrowse from './components/PopBrowse/PopBrowse';
-import PopNewCard from './components/PopNewCard/PopNewCard';
-import PopExit from './components/popups/PopExit';
+import PopBrowse from "./components/PopBrowse/PopBrowse";
+import PopNewCard from "./components/PopNewCard/PopNewCard";
+import PopExit from "./components/popups/PopExit";
+import Content from "./components/Content/Content";
+import { useEffect, useState } from "react";
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  }, []);
+
   return (
     <div className="wrapper">
       {/* Popups */}
@@ -13,8 +21,7 @@ function App() {
       <PopBrowse />
 
       {/* Основная страница */}
-      <Header />
-      <Main />
+      <Content loading={loading} />
     </div>
   );
 }

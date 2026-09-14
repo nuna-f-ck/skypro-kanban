@@ -23,18 +23,24 @@ const calendarIcon = (
   </svg>
 );
 
+const colorsTopisc = {
+  Design: "purple",
+  Testing: "green",
+  Development: "orange",
+}
+
 export function Card({
   title = 'Название задачи',
-  theme = 'orange',
-  themeName = 'Web Design',
+  topic = 'Testing',
   date = '30.10.23',
+  actuallyTheme = colorsTopisc[topic] || 'green'
 }) {
   return (
     <div className="cards__item">
       <div className="cards__card card">
         <div className="card__group">
-          <div className={`card__theme _${theme}`}>
-            <p className={`_${theme}`}>{themeName}</p>
+          <div className={`card__theme _${actuallyTheme}`}>
+            <p>{topic}</p>
           </div>
 
           <a href="#popBrowse" target="_self">
