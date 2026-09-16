@@ -1,3 +1,14 @@
+import {
+  CardsItem,
+  CardsCard,
+  CardGroup,
+  CardTheme,
+  CardButton,
+  CardContent,
+  CardTitle,
+  CardDate,
+} from "./Card.styled";
+
 const calendarIcon = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -23,47 +34,48 @@ const calendarIcon = (
   </svg>
 );
 
-const colorsTopisc = {
+const colorsTopics = {
   Design: "purple",
   Testing: "green",
   Development: "orange",
-}
+};
 
 export function Card({
-  title = 'Название задачи',
-  topic = 'Testing',
-  date = '30.10.23',
-  actuallyTheme = colorsTopisc[topic] || 'green'
+  title = "Название задачи",
+  topic = "Testing",
+  date = "30.10.23",
 }) {
+  const actualTheme = colorsTopics[topic] || "green";
+
   return (
-    <div className="cards__item">
-      <div className="cards__card card">
-        <div className="card__group">
-          <div className={`card__theme _${actuallyTheme}`}>
+    <CardsItem>
+      <CardsCard>
+        <CardGroup>
+          <CardTheme $actuallyTheme={actualTheme}>
             <p>{topic}</p>
-          </div>
+          </CardTheme>
 
           <a href="#popBrowse" target="_self">
-            <div className="card__btn">
+            <CardButton>
               <div></div>
               <div></div>
               <div></div>
-            </div>
+            </CardButton>
           </a>
-        </div>
+        </CardGroup>
 
-        <div className="card__content">
+        <CardContent>
           <a href="" target="_blank">
-            <h3 className="card__title">{title}</h3>
+            <CardTitle>{title}</CardTitle>
           </a>
 
-          <div className="card__date">
+          <CardDate>
             {calendarIcon}
             <p>{date}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+          </CardDate>
+        </CardContent>
+      </CardsCard>
+    </CardsItem>
   );
 }
 

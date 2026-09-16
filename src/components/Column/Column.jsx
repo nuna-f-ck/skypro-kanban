@@ -1,23 +1,26 @@
-import Card from '../Card/Card';
+import Card from "../Card/Card";
+import { MainColumn, ColumnTitle, Cards } from "./Column.styled";
 
 export function Column({ status, cards = [] }) {
   return (
-    <div className="main__column column">
-      <div className="column__title">
+    <MainColumn>
+      <ColumnTitle>
         <p>{status}</p>
-      </div>
+      </ColumnTitle>
 
-      <div className="cards">
-        {cards.filter((card) => card.status == status).map((card) => (
-          <Card
-            key={card.id}
-            title={card.title}
-            topic={card.topic}
-            date={card.date}
-          />
-        ))}
-      </div>
-    </div>
+      <Cards>
+        {cards
+          .filter((card) => card.status === status)
+          .map((card) => (
+            <Card
+              key={card.id}
+              title={card.title}
+              topic={card.topic}
+              date={card.date}
+            />
+          ))}
+      </Cards>
+    </MainColumn>
   );
 }
 

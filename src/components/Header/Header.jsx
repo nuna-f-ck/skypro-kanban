@@ -1,41 +1,53 @@
 import PopUser from "../PopUser/PopUser";
 import { useState } from "react";
+import { Container } from "../General/General.styled";
+import {
+  StyledHeader,
+  HeaderBlock,
+  HeaderLogo,
+  HeaderNav,
+  HeaderBtnMainNew,
+  UserName,
+} from "./Header.styled";
 
-export function Header() {
+export function Header({ isDarkMode, setIsDarkMode }) {
   const [popState, setPopState] = useState(false);
 
   const togglePopUser = () => {
-    setPopState(!popState)
+    setPopState(!popState);
   };
 
   return (
-    <header className="header">
-      <div className="container">
-        <div className="header__block">
-          <div className="header__logo _show _light">
+    <StyledHeader>
+      <Container>
+        <HeaderBlock>
+          <HeaderLogo>
             <a href="" target="_self">
-              <img src="/logo.png" alt="logo" />
+              <img
+                src={isDarkMode ? "/logo_dark.png" : "/logo.png"}
+                alt="logo"
+              />
             </a>
-          </div>
+          </HeaderLogo>
 
-          <div className="header__logo _dark">
-            <a href="" target="_self">
-              <img src="/logo_dark.png" alt="logo" />
-            </a>
-          </div>
-
-          <nav className="header__nav">
-            <button className="header__btn-main-new _hover01" id="btnMainNew">
+          <HeaderNav>
+            <HeaderBtnMainNew id="btnMainNew">
               <a href="#popNewCard">Создать новую задачу</a>
-            </button>
+            </HeaderBtnMainNew>
 
-            <p onClick={togglePopUser}>Ivan Ivanov</p>
+            <UserName onClick={togglePopUser}>
+              Ivan Ivanov
+            </UserName>
 
-            <PopUser popState={popState} />
-          </nav>
-        </div>
-      </div>
-    </header>
+            <PopUser
+              popState={popState}
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
+            />
+          </HeaderNav>
+        </HeaderBlock>
+      </Container>
+    </StyledHeader>
   );
 }
 

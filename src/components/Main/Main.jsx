@@ -1,31 +1,37 @@
-import Column from '../Column/Column';
-import { cardList } from '../../data';
+import Column from "../Column/Column";
+import { cardList } from "../../data";
+import { Container } from "../General/General.styled";
+import {
+  StyledMain,
+  MainBlock,
+  MainContent,
+} from "./Main.styled";
 
-const colamnsNames = [
+const columnsNames = [
   "Без статуса",
   "Нужно сделать",
   "В работе",
   "Тестирование",
-  "Готово"
+  "Готово",
 ];
 
 export function Main() {
   return (
-    <main className="main">
-      <div className="container">
-        <div className="main__block">
-          <div className="main__content">
-            {colamnsNames.map((status, index) => (
+    <StyledMain>
+      <Container>
+        <MainBlock>
+          <MainContent>
+            {columnsNames.map((status) => (
               <Column
-                key={index}
+                key={status}
                 status={status}
                 cards={cardList}
               />
             ))}
-          </div>
-        </div>
-      </div>
-    </main>
+          </MainContent>
+        </MainBlock>
+      </Container>
+    </StyledMain>
   );
 }
 
