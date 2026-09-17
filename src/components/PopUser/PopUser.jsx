@@ -1,29 +1,45 @@
-export function PopUser({popState}) {
+import {
+  PopUserWrapper,
+  UserName,
+  UserMail,
+  ThemeRow,
+  ThemeText,
+  ThemeCheckbox,
+  LogoutButton,
+} from "./PopUser.styled";
+
+export function PopUser({ popState, isDarkMode, setIsDarkMode }) {
+  const togglePopUser = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  if (!popState) {
+    return null;
+  }
+
   return (
-    <div>
-      {popState ? (<div className="header__pop-user-set pop-user-set">
-      <p className="pop-user-set__name">Ivan Ivanov</p>
+    <PopUserWrapper>
+      <UserName>Ivan Ivanov</UserName>
 
-      <p className="pop-user-set__mail">
-        ivan.ivanov@gmail.com
-      </p>
+      <UserMail>ivan.ivanov@gmail.com</UserMail>
 
-      <div className="pop-user-set__theme">
-        <p>Темная тема</p>
+      <ThemeRow>
+        <ThemeText>
+          <p>Темная тема</p>
+        </ThemeText>
 
-        <input
+        <ThemeCheckbox
           type="checkbox"
-          className="checkbox"
           name="checkbox"
+          checked={isDarkMode}
+          onChange={togglePopUser}
         />
-      </div>
+      </ThemeRow>
 
-      <button type="button" className="_hover03">
+      <LogoutButton type="button">
         <a href="#popExit">Выйти</a>
-      </button>
-    </div>) :
-  (null)}
-    </div>
+      </LogoutButton>
+    </PopUserWrapper>
   );
 }
 
