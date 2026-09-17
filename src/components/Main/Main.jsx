@@ -1,11 +1,8 @@
 import Column from "../Column/Column";
 import { cardList } from "../../data";
 import { Container } from "../General/General.styled";
-import {
-  StyledMain,
-  MainBlock,
-  MainContent,
-} from "./Main.styled";
+
+import { StyledMain, MainBlock, MainContent } from "./Main.styled";
 
 const columnsNames = [
   "Без статуса",
@@ -22,11 +19,7 @@ export function Main() {
         <MainBlock>
           <MainContent>
             {columnsNames.map((status) => (
-              <Column
-                key={status}
-                status={status}
-                cards={cardList}
-              />
+              <Column key={status} status={status} cards={cardList} />
             ))}
           </MainContent>
         </MainBlock>

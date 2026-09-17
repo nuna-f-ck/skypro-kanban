@@ -38,18 +38,21 @@ export const HeaderNav = styled.nav`
 export const HeaderBtnMainNew = styled.button`
   width: 178px;
   height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   border-radius: 4px;
   background-color: #565eef;
   color: #ffffff;
   border: none;
+
   font-size: 14px;
   line-height: 1;
   font-weight: 500;
-  margin-right: 20px;
 
-  & a {
-    color: #ffffff;
-  }
+  margin-right: 20px;
 
   &:hover {
     background-color: #33399b;

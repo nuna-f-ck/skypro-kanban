@@ -53,7 +53,7 @@ export const ThemeCheckbox = styled.input`
   height: 13px;
   border-radius: 100px;
 
-  background: #eaEEF6;
+  background: #eaeef6;
 
   outline: none;
   appearance: none;

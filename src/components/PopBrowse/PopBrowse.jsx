@@ -1,4 +1,4 @@
-import Calendar from '../Calendar/Calendar';
+import Calendar from "../Calendar/Calendar";
 
 export function PopBrowse() {
   return (
@@ -6,11 +6,8 @@ export function PopBrowse() {
       <div className="pop-browse__container">
         <div className="pop-browse__block">
           <div className="pop-browse__content">
-
             <div className="pop-browse__top-block">
-              <h3 className="pop-browse__ttl">
-                Название задачи
-              </h3>
+              <h3 className="pop-browse__ttl">Название задачи</h3>
 
               <div className="categories__theme theme-top _orange _active-category">
                 <p className="_orange">Web Design</p>
@@ -18,9 +15,7 @@ export function PopBrowse() {
             </div>
 
             <div className="pop-browse__status status">
-              <p className="status__p subttl">
-                Статус
-              </p>
+              <p className="status__p subttl">Статус</p>
 
               <div className="status__themes">
                 <div className="status__theme _hide">
@@ -52,10 +47,7 @@ export function PopBrowse() {
                 action="#"
               >
                 <div className="form-browse__block">
-                  <label
-                    htmlFor="textArea01"
-                    className="subttl"
-                  >
+                  <label htmlFor="textArea01" className="subttl">
                     Описание задачи
                   </label>
 
@@ -73,9 +65,7 @@ export function PopBrowse() {
             </div>
 
             <div className="theme-down__categories theme-down">
-              <p className="categories__p subttl">
-                Категория
-              </p>
+              <p className="categories__p subttl">Категория</p>
 
               <div className="categories__theme _orange _active-category">
                 <p className="_orange">Web Design</p>
@@ -120,7 +110,6 @@ export function PopBrowse() {
                 <a href="#">Закрыть</a>
               </button>
             </div>
-
           </div>
         </div>
       </div>

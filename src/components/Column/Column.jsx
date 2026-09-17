@@ -14,6 +14,7 @@ export function Column({ status, cards = [] }) {
           .map((card) => (
             <Card
               key={card.id}
+              id={card.id}
               title={card.title}
               topic={card.topic}
               date={card.date}

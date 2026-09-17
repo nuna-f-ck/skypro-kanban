@@ -1,6 +1,9 @@
 import PopUser from "../PopUser/PopUser";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+
 import { Container } from "../General/General.styled";
+
 import {
   StyledHeader,
   HeaderBlock,
@@ -10,7 +13,7 @@ import {
   UserName,
 } from "./Header.styled";
 
-export function Header({ isDarkMode, setIsDarkMode }) {
+export function Header({ isDarkMode, setIsDarkMode, setIsAuth }) {
   const [popState, setPopState] = useState(false);
 
   const togglePopUser = () => {
@@ -22,27 +25,26 @@ export function Header({ isDarkMode, setIsDarkMode }) {
       <Container>
         <HeaderBlock>
           <HeaderLogo>
-            <a href="" target="_self">
+            <Link to="/">
               <img
                 src={isDarkMode ? "/logo_dark.png" : "/logo.png"}
                 alt="logo"
               />
-            </a>
+            </Link>
           </HeaderLogo>
 
           <HeaderNav>
-            <HeaderBtnMainNew id="btnMainNew">
-              <a href="#popNewCard">Создать новую задачу</a>
+            <HeaderBtnMainNew as={Link} to="/card/add">
+              Создать новую задачу
             </HeaderBtnMainNew>
 
-            <UserName onClick={togglePopUser}>
-              Ivan Ivanov
-            </UserName>
+            <UserName onClick={togglePopUser}>Ivan Ivanov</UserName>
 
             <PopUser
               popState={popState}
               isDarkMode={isDarkMode}
               setIsDarkMode={setIsDarkMode}
+              setIsAuth={setIsAuth}
             />
           </HeaderNav>
         </HeaderBlock>
