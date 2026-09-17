@@ -1,20 +1,5 @@
 import styled from "styled-components";
 
-const themeStyles = {
-  orange: {
-    bg: "#FF6D00",
-    text: "#FFE4C2",
-  },
-  green: {
-    bg: "#06B16E",
-    text: "#B4FDD1",
-  },
-  purple: {
-    bg: "#9A48F1",
-    text: "#E9D4FF",
-  },
-};
-
 export const CardsItem = styled.div`
   padding: 5px;
 
@@ -59,10 +44,10 @@ export const CardTheme = styled.div`
   border-radius: 18px;
 
   background-color: ${(props) =>
-    themeStyles[props.$actuallyTheme]?.bg || "#06B16E"};
+    props.theme.topicColors[props.$actuallyTheme]?.bg || "#B4FDD1"};
 
   color: ${(props) =>
-    themeStyles[props.$actuallyTheme]?.text || "#B4FDD1"};
+    props.theme.topicColors[props.$actuallyTheme]?.text || "#06B16E"};
 
   & p {
     font-size: 10px;
@@ -102,7 +87,7 @@ export const CardContent = styled.div`
 
 export const CardTitle = styled.h3`
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 18px;
 
   color: ${(props) => props.theme.title};

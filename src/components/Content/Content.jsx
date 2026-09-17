@@ -9,8 +9,11 @@ const Content = ({ loading, isDarkMode, setIsDarkMode }) => {
         <LoadingText>Данные загружаются</LoadingText>
       ) : (
         <>
-          <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-          <Main />
+          <Header
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
+          />
+          <Main/>
         </>
       )}
     </div>

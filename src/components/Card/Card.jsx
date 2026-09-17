@@ -54,6 +54,7 @@ export function Card({
           <CardTheme $actuallyTheme={actualTheme}>
             <p>{topic}</p>
           </CardTheme>
+          
 
           <a href="#popBrowse" target="_self">
             <CardButton>

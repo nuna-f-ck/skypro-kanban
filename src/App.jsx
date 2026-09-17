@@ -17,6 +17,21 @@ const themes = {
     title: "#000000",
     logo: "/logo.png",
     userText: "#000000",
+
+    topicColors: {
+      orange: {
+        bg: "#FFE4C2",
+        text: "#FF6D00",
+      },
+      green: {
+        bg: "#B4FDD1",
+        text: "#06B16E",
+      },
+      purple: {
+        bg: "#E9D4FF",
+        text: "#9A48F1",
+      },
+    },
   },
 
   dark: {
@@ -28,6 +43,21 @@ const themes = {
     title: "#FFFFFF",
     logo: "/logo_dark.png",
     userText: "#FFFFFF",
+
+    topicColors: {
+      orange: {
+        bg: "#FF6D00",
+        text: "#FFE4C2",
+      },
+      green: {
+        bg: "#06B16E",
+        text: "#B4FDD1",
+      },
+      purple: {
+        bg: "#9A48F1",
+        text: "#E9D4FF",
+      },
+    },
   },
 };
 
