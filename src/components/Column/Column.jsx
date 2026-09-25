@@ -1,4 +1,5 @@
 import Card from "../Card/Card";
+
 import { MainColumn, ColumnTitle, Cards } from "./Column.styled";
 
 export function Column({ status, cards = [] }) {
@@ -13,8 +14,8 @@ export function Column({ status, cards = [] }) {
           .filter((card) => card.status === status)
           .map((card) => (
             <Card
-              key={card.id}
-              id={card.id}
+              key={card._id}
+              id={card._id}
               title={card.title}
               topic={card.topic}
               date={card.date}

@@ -11,8 +11,10 @@ import {
 } from "./PopUser.styled";
 
 export function PopUser({ popState, isDarkMode, setIsDarkMode }) {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
   const togglePopUser = () => {
-    setIsDarkMode(!isDarkMode);
+    setIsDarkMode((prev) => !prev);
   };
 
   if (!popState) {
@@ -21,18 +23,15 @@ export function PopUser({ popState, isDarkMode, setIsDarkMode }) {
 
   return (
     <PopUserWrapper>
-      <UserName>Ivan Ivanov</UserName>
+      <UserName>{user?.name || user?.login}</UserName>
 
-      <UserMail>ivan.ivanov@gmail.com</UserMail>
+      <UserMail>{user?.login}</UserMail>
 
       <ThemeRow>
-        <ThemeText>
-          <p>Темная тема</p>
-        </ThemeText>
+        <ThemeText>Темная тема</ThemeText>
 
         <ThemeCheckbox
           type="checkbox"
-          name="checkbox"
           checked={isDarkMode}
           onChange={togglePopUser}
         />
