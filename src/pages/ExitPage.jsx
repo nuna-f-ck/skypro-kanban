@@ -4,7 +4,6 @@ import {
   CenterPage,
   PageModal,
   PageTitle,
-  Description,
   Actions,
   PrimaryButton,
   SecondaryButton,
@@ -14,8 +13,14 @@ function ExitPage({ setIsAuth }) {
   const navigate = useNavigate();
 
   const handleExit = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     setIsAuth(false);
-    navigate("/login", { replace: true });
+
+    navigate("/login", {
+      replace: true,
+    });
   };
 
   const handleCancel = () => {
@@ -26,8 +31,6 @@ function ExitPage({ setIsAuth }) {
     <CenterPage>
       <PageModal>
         <PageTitle>Выйти из аккаунта?</PageTitle>
-
-        <Description>Вы действительно хотите выйти из аккаунта?</Description>
 
         <Actions>
           <PrimaryButton type="button" onClick={handleExit}>

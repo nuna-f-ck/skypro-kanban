@@ -11,6 +11,14 @@ import {
   CardDate,
 } from "./Card.styled";
 
+const colorsTopics = {
+  Design: "purple",
+  Testing: "green",
+  Development: "orange",
+  Research: "green",
+  Copywriting: "purple",
+};
+
 const calendarIcon = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -26,6 +34,7 @@ const calendarIcon = (
       strokeWidth="0.8"
       strokeLinejoin="round"
     />
+
     <path
       d="M11.7812 4.0625H1.21875M3.25 1.21875V2.03125M9.75 1.21875V2.03125"
       stroke="#94A6BE"
@@ -36,19 +45,15 @@ const calendarIcon = (
   </svg>
 );
 
-const colorsTopics = {
-  Design: "purple",
-  Testing: "green",
-  Development: "orange",
-};
-
 export function Card({
   id,
   title = "Название задачи",
-  topic = "Testing",
-  date = "30.10.23",
+  topic = "Research",
+  date,
 }) {
   const actualTheme = colorsTopics[topic] || "green";
+
+  const formattedDate = date ? new Date(date).toLocaleDateString("ru-RU") : "";
 
   return (
     <CardsItem>
@@ -60,9 +65,9 @@ export function Card({
 
           <Link to={`/card/${id}`}>
             <CardButton>
-              <div></div>
-              <div></div>
-              <div></div>
+              <div />
+              <div />
+              <div />
             </CardButton>
           </Link>
         </CardGroup>
@@ -74,7 +79,7 @@ export function Card({
 
           <CardDate>
             {calendarIcon}
-            <p>{date}</p>
+            <p>{formattedDate}</p>
           </CardDate>
         </CardContent>
       </CardsCard>

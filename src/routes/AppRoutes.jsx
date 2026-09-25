@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
@@ -14,96 +14,87 @@ import CardPage from "../pages/CardPage";
 import ExitPage from "../pages/ExitPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
-const themes = {
-  light: {
-    bodyBackground: "#EAEEF6",
-    mainBackground: "#EAEEF6",
-    headerBackground: "#FFFFFF",
-    cardBackground: "#FFFFFF",
-    text: "#000000",
-    title: "#000000",
-    logo: "/logo.png",
-    userText: "#000000",
-
-    topicColors: {
-      orange: {
-        bg: "#FFE4C2",
-        text: "#FF6D00",
-      },
-      green: {
-        bg: "#B4FDD1",
-        text: "#06B16E",
-      },
-      purple: {
-        bg: "#E9D4FF",
-        text: "#9A48F1",
-      },
+const lightTheme = {
+  body: "#F1F1F1",
+  mainBackground: "#F1F1F1",
+  headerBackground: "#FFFFFF",
+  cardBackground: "#FFFFFF",
+  title: "#000000",
+  text: "#000000",
+  userText: "#000000",
+  topicColors: {
+    purple: {
+      bg: "#E9D4FF",
+      text: "#9B51E0",
+    },
+    green: {
+      bg: "#B4FDD1",
+      text: "#06B16E",
+    },
+    orange: {
+      bg: "#FFE4C7",
+      text: "#FF6D00",
     },
   },
+};
 
-  dark: {
-    bodyBackground: "#151419",
-    mainBackground: "#151419",
-    headerBackground: "#20202C",
-    cardBackground: "#20202C",
-    text: "#FFFFFF",
-    title: "#FFFFFF",
-    logo: "/logo_dark.png",
-    userText: "#FFFFFF",
-
-    topicColors: {
-      orange: {
-        bg: "#FF6D00",
-        text: "#FFE4C2",
-      },
-      green: {
-        bg: "#06B16E",
-        text: "#B4FDD1",
-      },
-      purple: {
-        bg: "#9A48F1",
-        text: "#E9D4FF",
-      },
+const darkTheme = {
+  body: "#15171C",
+  mainBackground: "#15171C",
+  headerBackground: "#202229",
+  cardBackground: "#202229",
+  title: "#FFFFFF",
+  text: "#FFFFFF",
+  userText: "#FFFFFF",
+  topicColors: {
+    purple: {
+      bg: "#9B51E0",
+      text: "#E9D4FF",
+    },
+    green: {
+      bg: "#06B16E",
+      text: "#B4FDD1",
+    },
+    orange: {
+      bg: "#FF6D00",
+      text: "#FFE4C7",
     },
   },
 };
 
 function AppRoutes() {
-  const [isAuth, setIsAuth] = useState(false);
+  const [isAuth, setIsAuth] = useState(
+    Boolean(localStorage.getItem("token"))
+  );
+
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const currentTheme = isDarkMode ? themes.dark : themes.light;
+  const theme = isDarkMode ? darkTheme : lightTheme;
 
   return (
-    <ThemeProvider theme={currentTheme}>
+    <ThemeProvider theme={theme}>
       <GlobalStyle />
 
       <Wrapper>
         <Routes>
-          {/* Открытые страницы */}
-          <Route path="/login" element={<LoginPage setIsAuth={setIsAuth} />} />
+          <Route
+            path="/login"
+            element={<LoginPage setIsAuth={setIsAuth} />}
+          />
 
-          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/register"
+            element={<RegisterPage />}
+          />
 
-          {/* Защищённые страницы */}
           <Route element={<PrivateRoute isAuth={isAuth} />}>
             <Route
               path="/"
               element={
                 <MainPage
-                  loading={loading}
                   isDarkMode={isDarkMode}
                   setIsDarkMode={setIsDarkMode}
+                  setIsAuth={setIsAuth}
                 />
               }
             />
@@ -128,11 +119,11 @@ function AppRoutes() {
               }
             />
 
-            <Route path="/exit" element={<ExitPage setIsAuth={setIsAuth} />} />
+            <Route
+              path="/exit"
+              element={<ExitPage setIsAuth={setIsAuth} />}
+            />
           </Route>
-
-          {/* 404 */}
-          <Route path="/404" element={<NotFoundPage />} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
