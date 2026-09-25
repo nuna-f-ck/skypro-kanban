@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import {
   PopUserWrapper,
   UserName,
@@ -36,8 +38,8 @@ export function PopUser({ popState, isDarkMode, setIsDarkMode }) {
         />
       </ThemeRow>
 
-      <LogoutButton type="button">
-        <a href="#popExit">Выйти</a>
+      <LogoutButton as={Link} to="/exit">
+        Выйти
       </LogoutButton>
     </PopUserWrapper>
   );

@@ -1,44 +1,44 @@
 export function Calendar({ isBrowse = false }) {
   const days = [
-    { value: '28', other: true },
-    { value: '29', other: true },
-    { value: '30', other: true },
-    { value: '31' },
-    { value: '1' },
-    { value: '2', weekend: true },
-    { value: '3', weekend: true },
+    { value: "28", other: true },
+    { value: "29", other: true },
+    { value: "30", other: true },
+    { value: "31" },
+    { value: "1" },
+    { value: "2", weekend: true },
+    { value: "3", weekend: true },
 
-    { value: '4' },
-    { value: '5' },
-    { value: '6' },
-    { value: '7' },
-    { value: '8', current: true },
-    { value: '9', weekend: true, active: isBrowse },
-    { value: '10', weekend: true },
+    { value: "4" },
+    { value: "5" },
+    { value: "6" },
+    { value: "7" },
+    { value: "8", current: true },
+    { value: "9", weekend: true, active: isBrowse },
+    { value: "10", weekend: true },
 
-    { value: '11' },
-    { value: '12' },
-    { value: '13' },
-    { value: '14' },
-    { value: '15' },
-    { value: '16', weekend: true },
-    { value: '17', weekend: true },
+    { value: "11" },
+    { value: "12" },
+    { value: "13" },
+    { value: "14" },
+    { value: "15" },
+    { value: "16", weekend: true },
+    { value: "17", weekend: true },
 
-    { value: '18' },
-    { value: '19' },
-    { value: '20' },
-    { value: '21' },
-    { value: '22' },
-    { value: '23', weekend: true },
-    { value: '24', weekend: true },
+    { value: "18" },
+    { value: "19" },
+    { value: "20" },
+    { value: "21" },
+    { value: "22" },
+    { value: "23", weekend: true },
+    { value: "24", weekend: true },
 
-    { value: '25' },
-    { value: '26' },
-    { value: '27' },
-    { value: '28' },
-    { value: '29' },
-    { value: '30', weekend: true },
-    { value: '1', other: true, weekend: true },
+    { value: "25" },
+    { value: "26" },
+    { value: "27" },
+    { value: "28" },
+    { value: "29" },
+    { value: "30", weekend: true },
+    { value: "1", other: true, weekend: true },
   ];
 
   return (
@@ -88,15 +88,15 @@ export function Calendar({ isBrowse = false }) {
           <div className="calendar__cells">
             {days.map((day, index) => {
               const classes = [
-                'calendar__cell',
-                day.other && '_other-month',
-                !day.other && '_cell-day',
-                day.weekend && '_weekend',
-                day.current && '_current',
-                day.active && '_active-day',
+                "calendar__cell",
+                day.other && "_other-month",
+                !day.other && "_cell-day",
+                day.weekend && "_weekend",
+                day.current && "_current",
+                day.active && "_active-day",
               ]
                 .filter(Boolean)
-                .join(' ');
+                .join(" ");
 
               return (
                 <div className={classes} key={`${day.value}-${index}`}>
@@ -107,20 +107,13 @@ export function Calendar({ isBrowse = false }) {
           </div>
         </div>
 
-        <input
-          type="hidden"
-          id="datepick_value"
-          value="08.09.2023"
-          readOnly
-        />
+        <input type="hidden" id="datepick_value" value="08.09.2023" readOnly />
 
         <div className="calendar__period">
           <p className="calendar__p date-end">
-            {isBrowse ? 'Срок исполнения: ' : 'Выберите срок исполнения '}
-            <span className="date-control">
-              {isBrowse ? '09.09.23' : ''}
-            </span>
-            {!isBrowse && '.'}
+            {isBrowse ? "Срок исполнения: " : "Выберите срок исполнения "}
+            <span className="date-control">{isBrowse ? "09.09.23" : ""}</span>
+            {!isBrowse && "."}
           </p>
         </div>
       </div>
