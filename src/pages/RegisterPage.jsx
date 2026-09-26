@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { registerUser } from "../services/auth";
+import AuthContext from "../context/AuthContext";
 
 import {
-  CenterPage,
-  PageModal,
+  AuthPage,
+  AuthModal,
   PageTitle,
   Form,
   Input,
@@ -15,6 +15,8 @@ import {
 
 function RegisterPage() {
   const navigate = useNavigate();
+
+  const { register } = useContext(AuthContext);
 
   const [name, setName] = useState("");
   const [login, setLogin] = useState("");
@@ -51,22 +53,17 @@ function RegisterPage() {
     try {
       setLoading(true);
 
-      await registerUser({
-        login,
-        name,
-        password,
-      });
+      await register({ login, name, password });
 
       navigate("/login");
-    } catch (error) {
-      console.error("Ошибка регистрации:", error);
-      console.error("Ответ сервера:", error.response?.data);
+    } catch (requestError) {
+      console.error("Ошибка регистрации:", requestError);
 
-      const serverMessage = error.response?.data?.error;
+      const serverMessage = requestError.response?.data?.error;
 
       if (serverMessage) {
         setError(serverMessage);
-      } else if (error.response?.status === 400) {
+      } else if (requestError.response?.status === 400) {
         setError("Не удалось зарегистрироваться. Проверьте введённые данные.");
       } else {
         setError("Не удалось зарегистрироваться. Попробуйте ещё раз.");
@@ -77,8 +74,8 @@ function RegisterPage() {
   };
 
   return (
-    <CenterPage>
-      <PageModal>
+    <AuthPage>
+      <AuthModal>
         <PageTitle>Регистрация</PageTitle>
 
         <Form onSubmit={handleSubmit}>
@@ -111,10 +108,10 @@ function RegisterPage() {
         </Form>
 
         <Description>
-          Уже есть аккаунт? <Link to="/login">Войти</Link>
+          Уже есть аккаунт? <Link to="/login">Войдите здесь</Link>
         </Description>
-      </PageModal>
-    </CenterPage>
+      </AuthModal>
+    </AuthPage>
   );
 }
 

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Header from "../components/Header/Header";
-import { getTask, updateTask, deleteTask } from "../services/tasks";
+import TaskContext from "../context/TaskContext";
 
 import {
   Page,
@@ -40,21 +40,9 @@ import {
 } from "./pages.styled";
 
 const categories = [
-  {
-    value: "Web Design",
-    label: "Web Design",
-    variant: "orange",
-  },
-  {
-    value: "Research",
-    label: "Research",
-    variant: "green",
-  },
-  {
-    value: "Copywriting",
-    label: "Copywriting",
-    variant: "purple",
-  },
+  { value: "Web Design", label: "Web Design", variant: "orange" },
+  { value: "Research", label: "Research", variant: "green" },
+  { value: "Copywriting", label: "Copywriting", variant: "purple" },
 ];
 
 const statuses = [
@@ -103,6 +91,8 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const { fetchTasks, editTask, removeTask } = useContext(TaskContext);
+
   const [task, setTask] = useState(null);
 
   const [title, setTitle] = useState("");
@@ -119,7 +109,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
   const [error, setError] = useState("");
 
   /*
-   * Загрузка задачи
+   * Загрузка задачи через TaskContext
    */
   useEffect(() => {
     let ignore = false;
@@ -129,11 +119,16 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
         setLoading(true);
         setError("");
 
-        const data = await getTask(id);
+        const loadedTasks = await fetchTasks();
 
         if (ignore) return;
 
-        const loadedTask = data.task || data;
+        const loadedTask = loadedTasks.find((item) => item._id === id);
+
+        if (!loadedTask) {
+          setError("Задача не найдена.");
+          return;
+        }
 
         setTask(loadedTask);
 
@@ -173,20 +168,14 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     return () => {
       ignore = true;
     };
-  }, [id]);
+  }, [id, fetchTasks]);
 
-  /*
-   * Дни календаря
-   */
   const calendarDays = useMemo(() => {
     const year = calendarDate.getFullYear();
     const month = calendarDate.getMonth();
 
     const firstDay = new Date(year, month, 1).getDay();
-
-    // Понедельник = 0 ... воскресенье = 6
     const mondayOffset = (firstDay + 6) % 7;
-
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const days = [];
@@ -236,15 +225,9 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     setError("");
   };
 
-  /*
-   * Текущая категория
-   */
   const currentCategory =
     categories.find((category) => category.value === topic) || categories[1];
 
-  /*
-   * Сохранение
-   */
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -273,7 +256,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     try {
       setSaving(true);
 
-      await updateTask(id, {
+      await editTask(id, {
         title: title.trim(),
         topic: topic.trim(),
         status: status.trim(),
@@ -295,9 +278,6 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     }
   };
 
-  /*
-   * Удаление задачи
-   */
   const handleDelete = async () => {
     const confirmDelete = window.confirm(
       "Вы уверены, что хотите удалить эту задачу?",
@@ -311,7 +291,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
       setDeleting(true);
       setError("");
 
-      await deleteTask(id);
+      await removeTask(id);
 
       navigate("/");
     } catch (requestError) {
@@ -323,16 +303,10 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     }
   };
 
-  /*
-   * Отмена
-   */
   const handleCancel = () => {
     navigate("/");
   };
 
-  /*
-   * Загрузка
-   */
   if (loading) {
     return (
       <Page>
@@ -349,9 +323,6 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     );
   }
 
-  /*
-   * Ошибка загрузки
-   */
   if (error && !task) {
     return (
       <Page>
@@ -380,8 +351,6 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
         <CenterPage>
           <EditModal>
             <form onSubmit={handleSubmit}>
-              {/* Название + категория */}
-
               <TopRow>
                 <TitleEditor
                   type="text"
@@ -398,8 +367,6 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
                   {currentCategory.label}
                 </CategoryButton>
               </TopRow>
-
-              {/* Статус */}
 
               <StatusLabel>Статус</StatusLabel>
 
@@ -418,8 +385,6 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
                   </StatusButton>
                 ))}
               </StatusList>
-
-              {/* Описание + календарь */}
 
               <ContentGrid>
                 <div>
@@ -491,8 +456,6 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
               </ContentGrid>
 
               {error && <ErrorText>{error}</ErrorText>}
-
-              {/* Кнопки */}
 
               <BottomRow>
                 <LeftButtons>

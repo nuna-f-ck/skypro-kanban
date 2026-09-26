@@ -26,24 +26,33 @@ export const Overlay = styled.div`
 `;
 
 export const CenterPage = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+`;
+
+export const AuthPage = styled.div`
+  min-height: 100vh;
   width: 100%;
 
   display: flex;
   align-items: center;
   justify-content: center;
+
+  background-color: ${(props) => props.theme.mainBackground};
 `;
 
 /* модальное окно */
 
-export const PageModal = styled.div`
-  width: 100%;
-  max-width: 490px;
+/* общая визуальная база модалки: фон, рамка, тень — без ширины и паддингов */
+
+const ModalBase = styled.div`
   max-height: calc(100vh - 100px);
 
   overflow-y: auto;
   box-sizing: border-box;
-
-  padding: 30px 22px 37px;
 
   background-color: ${(props) => props.theme.cardBackground};
 
@@ -55,6 +64,26 @@ export const PageModal = styled.div`
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
 
   scrollbar-width: thin;
+`;
+
+/* модальное окно для задач (AddTaskPage / CardPage) — широкое */
+
+export const PageModal = styled(ModalBase)`
+  width: 100%;
+  max-width: 490px;
+
+  padding: 30px 22px 37px;
+`;
+
+/* карточка для страниц авторизации/выхода — узкая, независима от PageModal */
+
+export const AuthModal = styled(ModalBase)`
+  width: 100%;
+  max-width: 400px;
+
+  padding: 40px 36px;
+
+  text-align: center;
 `;
 
 /* заголовок */
@@ -88,9 +117,16 @@ export const CategoryLabel = styled(FieldLabel)`
   margin-bottom: 10px;
 `;
 
-/* для AddTaskPage */
+/* форма авторизации (Login / Register) — простая колонка */
 
 export const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+`;
+
+/* форма для AddTaskPage — двухколоночная сетка (поле + календарь) */
+
+export const TaskForm = styled.form`
   width: 100%;
 
   display: grid;
@@ -121,7 +157,7 @@ export const Input = styled.input`
 
   box-sizing: border-box;
 
-  margin: 0 0 18px;
+  margin: 0 0 10px;
   padding: 0 10px;
 
   border: 1px solid
@@ -395,15 +431,18 @@ export const ErrorMessage = styled.p`
   line-height: 14px;
 `;
 
+/* крупная кнопка для авторизации: Вход / Регистрация / Выйти */
+
 export const PrimaryButton = styled.button`
-  min-width: 103px;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
 
-  height: 25px;
-
-  padding: 0 13px;
+  height: 40px;
+  padding: 0 16px;
 
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
 
   background-color: #565eef;
 
@@ -411,9 +450,10 @@ export const PrimaryButton = styled.button`
 
   font-family: inherit;
 
-  font-size: 10px;
-  line-height: 25px;
+  font-size: 14px;
+  line-height: 40px;
   font-weight: 600;
+  text-align: center;
 
   cursor: pointer;
 
@@ -430,9 +470,11 @@ export const PrimaryButton = styled.button`
 `;
 
 export const SecondaryButton = styled.button`
-  min-height: 35px;
+  box-sizing: border-box;
 
-  padding: 0 20px;
+  height: 40px;
+
+  padding: 0 16px;
 
   border: 1px solid #565eef;
   border-radius: 6px;
@@ -441,10 +483,18 @@ export const SecondaryButton = styled.button`
 
   color: #565eef;
 
+  font-family: inherit;
+
   font-size: 14px;
-  font-weight: 500;
+  line-height: 38px;
+  font-weight: 600;
+  text-align: center;
 
   cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 
   &:hover {
     background: #565eef;
@@ -460,7 +510,8 @@ export const Description = styled.p`
   flex-direction: column;
   align-items: center;
 
-  margin-bottom: 20px;
+  margin-top: 20px;
+  gap: 5px;
 
   color: ${(props) => (props.theme.text === "#FFFFFF" ? "#94a6be" : "#666d78")};
 
@@ -481,6 +532,10 @@ export const Actions = styled.div`
   gap: 10px;
 
   flex-wrap: wrap;
+
+  & > button {
+    flex: 1 1 0;
+  }
 `;
 
 export const NotFoundTitle = styled.h1`
@@ -762,18 +817,40 @@ export const SmallButton = styled.button`
   }
 `;
 
-export const SaveButton = styled(PrimaryButton)`
+/* маленькая синяя кнопка задач (Сохранить / Создать задачу) — независима от PrimaryButton */
+
+export const SaveButton = styled.button`
   min-width: 66px;
 
   height: 25px;
-  min-height: 25px;
 
   padding: 0 13px;
 
+  border: none;
   border-radius: 4px;
+
+  background-color: #565eef;
+
+  color: #ffffff;
+
+  font-family: inherit;
 
   font-size: 10px;
   line-height: 25px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #474bd0;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
 `;
 
 export const DeleteButton = styled(SmallButton)`

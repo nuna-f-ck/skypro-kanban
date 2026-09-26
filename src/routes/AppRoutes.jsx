@@ -23,18 +23,9 @@ const lightTheme = {
   text: "#000000",
   userText: "#000000",
   topicColors: {
-    purple: {
-      bg: "#E9D4FF",
-      text: "#9B51E0",
-    },
-    green: {
-      bg: "#B4FDD1",
-      text: "#06B16E",
-    },
-    orange: {
-      bg: "#FFE4C7",
-      text: "#FF6D00",
-    },
+    purple: { bg: "#E9D4FF", text: "#9B51E0" },
+    green: { bg: "#B4FDD1", text: "#06B16E" },
+    orange: { bg: "#FFE4C7", text: "#FF6D00" },
   },
 };
 
@@ -47,26 +38,13 @@ const darkTheme = {
   text: "#FFFFFF",
   userText: "#FFFFFF",
   topicColors: {
-    purple: {
-      bg: "#9B51E0",
-      text: "#E9D4FF",
-    },
-    green: {
-      bg: "#06B16E",
-      text: "#B4FDD1",
-    },
-    orange: {
-      bg: "#FF6D00",
-      text: "#FFE4C7",
-    },
+    purple: { bg: "#9B51E0", text: "#E9D4FF" },
+    green: { bg: "#06B16E", text: "#B4FDD1" },
+    orange: { bg: "#FF6D00", text: "#FFE4C7" },
   },
 };
 
 function AppRoutes() {
-  const [isAuth, setIsAuth] = useState(
-    Boolean(localStorage.getItem("token"))
-  );
-
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const theme = isDarkMode ? darkTheme : lightTheme;
@@ -77,24 +55,17 @@ function AppRoutes() {
 
       <Wrapper>
         <Routes>
-          <Route
-            path="/login"
-            element={<LoginPage setIsAuth={setIsAuth} />}
-          />
+          <Route path="/login" element={<LoginPage />} />
 
-          <Route
-            path="/register"
-            element={<RegisterPage />}
-          />
+          <Route path="/register" element={<RegisterPage />} />
 
-          <Route element={<PrivateRoute isAuth={isAuth} />}>
+          <Route element={<PrivateRoute />}>
             <Route
               path="/"
               element={
                 <MainPage
                   isDarkMode={isDarkMode}
                   setIsDarkMode={setIsDarkMode}
-                  setIsAuth={setIsAuth}
                 />
               }
             />
@@ -119,10 +90,7 @@ function AppRoutes() {
               }
             />
 
-            <Route
-              path="/exit"
-              element={<ExitPage setIsAuth={setIsAuth} />}
-            />
+            <Route path="/exit" element={<ExitPage />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />
