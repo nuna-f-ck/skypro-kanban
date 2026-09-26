@@ -1,5 +1,5 @@
 import Column from "../Column/Column";
-import { cardList } from "../../data";
+
 import { Container } from "../General/General.styled";
 
 import { StyledMain, MainBlock, MainContent } from "./Main.styled";
@@ -12,14 +12,14 @@ const columnsNames = [
   "Готово",
 ];
 
-export function Main() {
+export function Main({ tasks = [] }) {
   return (
     <StyledMain>
       <Container>
         <MainBlock>
           <MainContent>
             {columnsNames.map((status) => (
-              <Column key={status} status={status} cards={cardList} />
+              <Column key={status} status={status} cards={tasks} />
             ))}
           </MainContent>
         </MainBlock>

@@ -1,6 +1,7 @@
-import PopUser from "../PopUser/PopUser";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+
+import PopUser from "../PopUser/PopUser";
 
 import { Container } from "../General/General.styled";
 
@@ -13,11 +14,13 @@ import {
   UserName,
 } from "./Header.styled";
 
-export function Header({ isDarkMode, setIsDarkMode, setIsAuth }) {
+export function Header({ isDarkMode, setIsDarkMode }) {
   const [popState, setPopState] = useState(false);
 
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
   const togglePopUser = () => {
-    setPopState(!popState);
+    setPopState((prev) => !prev);
   };
 
   return (
@@ -38,13 +41,14 @@ export function Header({ isDarkMode, setIsDarkMode, setIsAuth }) {
               Создать новую задачу
             </HeaderBtnMainNew>
 
-            <UserName onClick={togglePopUser}>Ivan Ivanov</UserName>
+            <UserName onClick={togglePopUser}>
+              {user?.name || user?.login || "Пользователь"}
+            </UserName>
 
             <PopUser
               popState={popState}
               isDarkMode={isDarkMode}
               setIsDarkMode={setIsDarkMode}
-              setIsAuth={setIsAuth}
             />
           </HeaderNav>
         </HeaderBlock>

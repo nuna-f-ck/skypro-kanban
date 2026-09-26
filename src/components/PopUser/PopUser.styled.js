@@ -1,6 +1,10 @@
 import styled from "styled-components";
 
 export const PopUserWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
   position: absolute;
   top: 61px;
   right: 0;
@@ -38,6 +42,7 @@ export const ThemeRow = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 30px;
+  gap: 40px;
 `;
 
 export const ThemeText = styled.p`
@@ -78,6 +83,10 @@ export const ThemeCheckbox = styled.input`
 export const LogoutButton = styled.button`
   width: 72px;
   height: 30px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   background: transparent;
   color: #565eef;
