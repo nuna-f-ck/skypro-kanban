@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import AuthContext from "../context/AuthContext";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 import {
   AuthPage,
@@ -9,6 +10,7 @@ import {
   PageTitle,
   Form,
   Input,
+  FieldError,
   PrimaryButton,
   Description,
 } from "./pages.styled";
@@ -22,52 +24,60 @@ function RegisterPage() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    name: "",
+    login: "",
+    password: "",
+  });
+  const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const validate = () => {
+    const errors = {
+      name: name.trim() ? "" : "Введите имя",
+      login: login.trim() ? "" : "Введите логин",
+      password: "",
+    };
+
+    if (!password.trim()) {
+      errors.password = "Введите пароль";
+    } else if (password.trim().length < 3) {
+      errors.password = "Пароль должен содержать минимум 3 символа";
+    }
+
+    return errors;
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setError("");
+    setFormError("");
 
-    if (!name.trim()) {
-      setError("Введите имя");
-      return;
-    }
+    const errors = validate();
 
-    if (!login.trim()) {
-      setError("Введите логин");
-      return;
-    }
+    setFieldErrors(errors);
 
-    if (!password.trim()) {
-      setError("Введите пароль");
-      return;
-    }
-
-    if (password.length < 3) {
-      setError("Пароль должен содержать минимум 3 символа");
+    if (errors.name || errors.login || errors.password) {
       return;
     }
 
     try {
       setLoading(true);
 
-      await register({ login, name, password });
+      await register({
+        login: login.trim(),
+        name: name.trim(),
+        password: password.trim(),
+      });
 
       navigate("/login");
     } catch (requestError) {
-      console.error("Ошибка регистрации:", requestError);
-
-      const serverMessage = requestError.response?.data?.error;
-
-      if (serverMessage) {
-        setError(serverMessage);
-      } else if (requestError.response?.status === 400) {
-        setError("Не удалось зарегистрироваться. Проверьте введённые данные.");
-      } else {
-        setError("Не удалось зарегистрироваться. Попробуйте ещё раз.");
-      }
+      setFormError(
+        getErrorMessage(
+          requestError,
+          "Не удалось зарегистрироваться. Попробуйте ещё раз.",
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -78,29 +88,43 @@ function RegisterPage() {
       <AuthModal>
         <PageTitle>Регистрация</PageTitle>
 
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} noValidate>
           <Input
             type="text"
             placeholder="Имя"
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) => {
+              setName(event.target.value);
+              setFieldErrors((prev) => ({ ...prev, name: "" }));
+            }}
           />
+          {fieldErrors.name && <FieldError>{fieldErrors.name}</FieldError>}
 
           <Input
             type="text"
             placeholder="Эл. почта"
             value={login}
-            onChange={(event) => setLogin(event.target.value)}
+            onChange={(event) => {
+              setLogin(event.target.value);
+              setFieldErrors((prev) => ({ ...prev, login: "" }));
+            }}
           />
+          {fieldErrors.login && <FieldError>{fieldErrors.login}</FieldError>}
 
           <Input
             type="password"
             placeholder="Пароль"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              setFieldErrors((prev) => ({ ...prev, password: "" }));
+            }}
           />
+          {fieldErrors.password && (
+            <FieldError>{fieldErrors.password}</FieldError>
+          )}
 
-          {error && <Description>{error}</Description>}
+          {formError && <Description>{formError}</Description>}
 
           <PrimaryButton type="submit" disabled={loading}>
             {loading ? "Регистрация..." : "Зарегистрироваться"}

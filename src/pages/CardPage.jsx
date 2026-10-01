@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Header from "../components/Header/Header";
 import TaskContext from "../context/TaskContext";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 import {
   Page,
@@ -27,6 +28,7 @@ import {
   EditCalendarGrid,
   EditDayButton,
   EditCalendarHint,
+  FieldError,
   ErrorText,
   BottomRow,
   LeftButtons,
@@ -37,6 +39,8 @@ import {
   PageTitle,
   Description,
   CategoryButton,
+  LoadingState,
+  Spinner,
 } from "./pages.styled";
 
 const categories = [
@@ -101,23 +105,26 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
 
-  const [calendarDate, setCalendarDate] = useState(new Date(2023, 8, 1));
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState("");
 
-  /*
-   * Загрузка задачи через TaskContext
-   */
+  const [fieldErrors, setFieldErrors] = useState({
+    title: "",
+    description: "",
+  });
+  const [loadError, setLoadError] = useState("");
+  const [formError, setFormError] = useState("");
+
   useEffect(() => {
     let ignore = false;
 
     async function loadTask() {
       try {
         setLoading(true);
-        setError("");
+        setLoadError("");
 
         const loadedTasks = await fetchTasks();
 
@@ -126,7 +133,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
         const loadedTask = loadedTasks.find((item) => item._id === id);
 
         if (!loadedTask) {
-          setError("Задача не найдена.");
+          setLoadError("Задача не найдена.");
           return;
         }
 
@@ -153,9 +160,9 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
       } catch (requestError) {
         if (ignore) return;
 
-        console.error("Ошибка загрузки задачи:", requestError);
-
-        setError("Не удалось загрузить задачу.");
+        setLoadError(
+          getErrorMessage(requestError, "Не удалось загрузить задачу."),
+        );
       } finally {
         if (!ignore) {
           setLoading(false);
@@ -222,7 +229,6 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     );
 
     setDate(selected);
-    setError("");
   };
 
   const currentCategory =
@@ -231,25 +237,16 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setError("");
+    setFormError("");
 
-    if (!title.trim()) {
-      setError("Введите название задачи.");
-      return;
-    }
+    const errors = {
+      title: title.trim() ? "" : "Введите название задачи",
+      description: description.trim() ? "" : "Введите описание задачи",
+    };
 
-    if (!topic.trim()) {
-      setError("Выберите категорию задачи.");
-      return;
-    }
+    setFieldErrors(errors);
 
-    if (!status.trim()) {
-      setError("Выберите статус задачи.");
-      return;
-    }
-
-    if (!description.trim()) {
-      setError("Введите описание задачи.");
+    if (errors.title || errors.description) {
       return;
     }
 
@@ -258,21 +255,17 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
 
       await editTask(id, {
         title: title.trim(),
-        topic: topic.trim(),
-        status: status.trim(),
+        topic,
+        status,
         description: description.trim(),
         date: date || task?.date || "",
       });
 
       navigate("/");
     } catch (requestError) {
-      console.error("Ошибка обновления задачи:", requestError);
-
-      if (requestError.response?.status === 401) {
-        setError("Сессия закончилась. Войдите в аккаунт снова.");
-      } else {
-        setError("Не удалось сохранить изменения.");
-      }
+      setFormError(
+        getErrorMessage(requestError, "Не удалось сохранить изменения."),
+      );
     } finally {
       setSaving(false);
     }
@@ -289,15 +282,13 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
 
     try {
       setDeleting(true);
-      setError("");
+      setFormError("");
 
       await removeTask(id);
 
       navigate("/");
     } catch (requestError) {
-      console.error("Ошибка удаления задачи:", requestError);
-
-      setError("Не удалось удалить задачу.");
+      setFormError(getErrorMessage(requestError, "Не удалось удалить задачу."));
     } finally {
       setDeleting(false);
     }
@@ -315,7 +306,10 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
         <Overlay>
           <CenterPage>
             <EditModal>
-              <PageTitle>Загрузка...</PageTitle>
+              <LoadingState>
+                <Spinner />
+                Загрузка задачи...
+              </LoadingState>
             </EditModal>
           </CenterPage>
         </Overlay>
@@ -323,7 +317,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
     );
   }
 
-  if (error && !task) {
+  if (loadError && !task) {
     return (
       <Page>
         <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
@@ -333,7 +327,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
             <EditModal>
               <PageTitle>Задача не найдена</PageTitle>
 
-              <Description>{error}</Description>
+              <Description>{loadError}</Description>
 
               <Link to="/">Вернуться на доску</Link>
             </EditModal>
@@ -350,13 +344,16 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
       <Overlay>
         <CenterPage>
           <EditModal>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <TopRow>
                 <TitleEditor
                   type="text"
                   value={title}
                   placeholder="Название задачи"
-                  onChange={(event) => setTitle(event.target.value)}
+                  onChange={(event) => {
+                    setTitle(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, title: "" }));
+                  }}
                 />
 
                 <CategoryButton
@@ -367,6 +364,9 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
                   {currentCategory.label}
                 </CategoryButton>
               </TopRow>
+              {fieldErrors.title && (
+                <FieldError>{fieldErrors.title}</FieldError>
+              )}
 
               <StatusLabel>Статус</StatusLabel>
 
@@ -376,10 +376,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
                     key={item}
                     type="button"
                     $active={status === item}
-                    onClick={() => {
-                      setStatus(item);
-                      setError("");
-                    }}
+                    onClick={() => setStatus(item)}
                   >
                     {item}
                   </StatusButton>
@@ -393,8 +390,14 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
                   <EditTextarea
                     placeholder="Введите описание задачи..."
                     value={description}
-                    onChange={(event) => setDescription(event.target.value)}
+                    onChange={(event) => {
+                      setDescription(event.target.value);
+                      setFieldErrors((prev) => ({ ...prev, description: "" }));
+                    }}
                   />
+                  {fieldErrors.description && (
+                    <FieldError>{fieldErrors.description}</FieldError>
+                  )}
                 </div>
 
                 <div>
@@ -455,7 +458,7 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
                 </div>
               </ContentGrid>
 
-              {error && <ErrorText>{error}</ErrorText>}
+              {formError && <ErrorText>{formError}</ErrorText>}
 
               <BottomRow>
                 <LeftButtons>

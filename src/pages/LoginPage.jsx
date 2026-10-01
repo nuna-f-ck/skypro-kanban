@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import AuthContext from "../context/AuthContext";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 import {
   AuthPage,
@@ -9,6 +10,7 @@ import {
   PageTitle,
   Form,
   Input,
+  FieldError,
   PrimaryButton,
   Description,
 } from "./pages.styled";
@@ -21,44 +23,34 @@ function LoginPage() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({ login: "", password: "" });
+  const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setError("");
+    setFormError("");
 
-    if (!login.trim()) {
-      setError("Введите логин");
-      return;
-    }
+    const errors = {
+      login: login.trim() ? "" : "Введите логин",
+      password: password.trim() ? "" : "Введите пароль",
+    };
 
-    if (!password.trim()) {
-      setError("Введите пароль");
+    setFieldErrors(errors);
+
+    if (errors.login || errors.password) {
       return;
     }
 
     try {
       setLoading(true);
 
-      await loginUser({ login: login.trim(), password });
+      await loginUser({ login: login.trim(), password: password.trim() });
 
       navigate("/", { replace: true });
     } catch (requestError) {
-      console.error("Ошибка входа:", requestError);
-
-      const serverMessage = requestError.response?.data?.error;
-
-      if (serverMessage) {
-        setError(serverMessage);
-      } else if (requestError.response?.status === 400) {
-        setError("Неверный логин или пароль");
-      } else if (requestError.message) {
-        setError(requestError.message);
-      } else {
-        setError("Ошибка подключения к серверу");
-      }
+      setFormError(getErrorMessage(requestError, "Неверный логин или пароль"));
     } finally {
       setLoading(false);
     }
@@ -69,22 +61,32 @@ function LoginPage() {
       <AuthModal>
         <PageTitle>Вход</PageTitle>
 
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} noValidate>
           <Input
             type="text"
             placeholder="Эл. почта"
             value={login}
-            onChange={(event) => setLogin(event.target.value)}
+            onChange={(event) => {
+              setLogin(event.target.value);
+              setFieldErrors((prev) => ({ ...prev, login: "" }));
+            }}
           />
+          {fieldErrors.login && <FieldError>{fieldErrors.login}</FieldError>}
 
           <Input
             type="password"
             placeholder="Пароль"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              setFieldErrors((prev) => ({ ...prev, password: "" }));
+            }}
           />
+          {fieldErrors.password && (
+            <FieldError>{fieldErrors.password}</FieldError>
+          )}
 
-          {error && <Description>{error}</Description>}
+          {formError && <Description>{formError}</Description>}
 
           <PrimaryButton type="submit" disabled={loading}>
             {loading ? "Выполняется вход..." : "Войти"}

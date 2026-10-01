@@ -6,7 +6,14 @@ import TaskContext from "../context/TaskContext";
 import Header from "../components/Header/Header";
 import Main from "../components/Main/Main";
 
-import { Page, CenterPage, PageTitle, Description } from "./pages.styled";
+import {
+  Page,
+  CenterPage,
+  Description,
+  LoadingState,
+  Spinner,
+  EmptyState,
+} from "./pages.styled";
 
 function MainPage({ isDarkMode, setIsDarkMode }) {
   const { logout } = useContext(AuthContext);
@@ -34,11 +41,18 @@ function MainPage({ isDarkMode, setIsDarkMode }) {
 
       {loading ? (
         <CenterPage>
-          <PageTitle>Загрузка...</PageTitle>
+          <LoadingState>
+            <Spinner />
+            Загрузка задач...
+          </LoadingState>
         </CenterPage>
       ) : error ? (
         <CenterPage>
           <Description>{error}</Description>
+        </CenterPage>
+      ) : tasks.length === 0 ? (
+        <CenterPage>
+          <EmptyState>Новых задач нет</EmptyState>
         </CenterPage>
       ) : (
         <Main tasks={tasks} />

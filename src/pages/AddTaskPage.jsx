@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import Header from "../components/Header/Header";
 import TaskContext from "../context/TaskContext";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 import {
   Page,
@@ -16,6 +17,7 @@ import {
   RightColumn,
   Input,
   Textarea,
+  FieldError,
   CategoryLabel,
   CategoryList,
   CategoryButton,
@@ -79,9 +81,14 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
 
-  const [calendarDate, setCalendarDate] = useState(new Date(2023, 8, 1));
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    title: "",
+    description: "",
+    date: "",
+  });
+  const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const calendarDays = useMemo(() => {
@@ -136,31 +143,23 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
     );
 
     setDate(selected);
-    setError("");
+    setFieldErrors((prev) => ({ ...prev, date: "" }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setError("");
+    setFormError("");
 
-    if (!title.trim()) {
-      setError("Введите название задачи.");
-      return;
-    }
+    const errors = {
+      title: title.trim() ? "" : "Введите название задачи",
+      description: description.trim() ? "" : "Введите описание задачи",
+      date: date ? "" : "Выберите дату",
+    };
 
-    if (!topic.trim()) {
-      setError("Выберите категорию задачи.");
-      return;
-    }
+    setFieldErrors(errors);
 
-    if (!description.trim()) {
-      setError("Введите описание задачи.");
-      return;
-    }
-
-    if (!date) {
-      setError("Выберите дату.");
+    if (errors.title || errors.description || errors.date) {
       return;
     }
 
@@ -169,7 +168,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
 
       await addTask({
         title: title.trim(),
-        topic: topic.trim(),
+        topic,
         status: "Без статуса",
         description: description.trim(),
         date,
@@ -177,13 +176,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
 
       navigate("/");
     } catch (requestError) {
-      console.error("Ошибка создания задачи:", requestError);
-
-      if (requestError.response?.status === 401) {
-        setError("Сессия закончилась. Войдите в аккаунт снова.");
-      } else {
-        setError("Не удалось создать задачу.");
-      }
+      setFormError(getErrorMessage(requestError, "Не удалось создать задачу."));
     } finally {
       setLoading(false);
     }
@@ -198,7 +191,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
           <PageModal>
             <PageTitle>Создание задачи</PageTitle>
 
-            <TaskForm onSubmit={handleSubmit}>
+            <TaskForm onSubmit={handleSubmit} noValidate>
               <LeftColumn>
                 <FieldLabel>Название задачи</FieldLabel>
 
@@ -206,16 +199,28 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
                   type="text"
                   placeholder="Введите название задачи..."
                   value={title}
-                  onChange={(event) => setTitle(event.target.value)}
+                  onChange={(event) => {
+                    setTitle(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, title: "" }));
+                  }}
                 />
+                {fieldErrors.title && (
+                  <FieldError>{fieldErrors.title}</FieldError>
+                )}
 
                 <FieldLabel>Описание задачи</FieldLabel>
 
                 <Textarea
                   placeholder="Введите описание задачи..."
                   value={description}
-                  onChange={(event) => setDescription(event.target.value)}
+                  onChange={(event) => {
+                    setDescription(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, description: "" }));
+                  }}
                 />
+                {fieldErrors.description && (
+                  <FieldError>{fieldErrors.description}</FieldError>
+                )}
 
                 <CategoryLabel>Категория</CategoryLabel>
 
@@ -226,10 +231,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
                       type="button"
                       $variant={category.variant}
                       $active={topic === category.value}
-                      onClick={() => {
-                        setTopic(category.value);
-                        setError("");
-                      }}
+                      onClick={() => setTopic(category.value)}
                     >
                       {category.label}
                     </CategoryButton>
@@ -288,11 +290,15 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
                   </CalendarGrid>
                 </Calendar>
 
-                <CalendarHint>Выберите срок исполнения.</CalendarHint>
+                {fieldErrors.date ? (
+                  <FieldError>{fieldErrors.date}</FieldError>
+                ) : (
+                  <CalendarHint>Выберите срок исполнения.</CalendarHint>
+                )}
               </RightColumn>
 
               <FormFooter>
-                {error && <ErrorMessage>{error}</ErrorMessage>}
+                {formError && <ErrorMessage>{formError}</ErrorMessage>}
 
                 <SaveButton type="submit" disabled={loading}>
                   {loading ? "Создание..." : "Создать задачу"}

@@ -7,6 +7,7 @@ import {
   updateTask,
   deleteTask,
 } from "../services/tasks";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 export function TaskProvider({ children }) {
   const [tasks, setTasks] = useState([]);
@@ -25,7 +26,7 @@ export function TaskProvider({ children }) {
 
       return loadedTasks;
     } catch (requestError) {
-      setError("Не удалось загрузить задачи");
+      setError(getErrorMessage(requestError, "Не удалось загрузить задачи."));
       throw requestError;
     } finally {
       setLoading(false);

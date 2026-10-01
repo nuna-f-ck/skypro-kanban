@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 /* общие страницы */
 
@@ -44,7 +44,54 @@ export const AuthPage = styled.div`
   background-color: ${(props) => props.theme.mainBackground};
 `;
 
-/* модальное окно */
+/* спиннер загрузки */
+
+const spin = keyframes`
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+export const Spinner = styled.div`
+  width: 36px;
+  height: 36px;
+
+  border: 4px solid
+    ${(props) => (props.theme.text === "#FFFFFF" ? "#33364a" : "#e2e6ee")};
+  border-top-color: #565eef;
+  border-radius: 50%;
+
+  animation: ${spin} 0.8s linear infinite;
+`;
+
+export const LoadingState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 14px;
+
+  min-height: 160px;
+  width: 100%;
+
+  color: ${(props) => props.theme.text};
+
+  font-size: 14px;
+`;
+
+export const EmptyState = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 160px;
+  width: 100%;
+
+  color: ${(props) => (props.theme.text === "#FFFFFF" ? "#777a89" : "#8c939f")};
+
+  font-size: 14px;
+`;
 
 /* общая визуальная база модалки: фон, рамка, тень — без ширины и паддингов */
 
@@ -75,7 +122,7 @@ export const PageModal = styled(ModalBase)`
   padding: 30px 22px 37px;
 `;
 
-/* карточка для страниц авторизации/выхода — узкая, независима от PageModal */
+/* карточка для страниц авторизации/выхода/404 — узкая, независима от PageModal */
 
 export const AuthModal = styled(ModalBase)`
   width: 100%;
@@ -157,7 +204,7 @@ export const Input = styled.input`
 
   box-sizing: border-box;
 
-  margin: 0 0 10px;
+  margin: 0 0 4px;
   padding: 0 10px;
 
   border: 1px solid
@@ -199,7 +246,7 @@ export const Textarea = styled.textarea`
 
   box-sizing: border-box;
 
-  margin: 0 0 10px;
+  margin: 0 0 4px;
   padding: 11px 10px;
 
   resize: none;
@@ -227,6 +274,17 @@ export const Textarea = styled.textarea`
   &:focus {
     border-color: #565eef;
   }
+`;
+
+/* ошибка под конкретным полем */
+
+export const FieldError = styled.p`
+  margin: 0 0 10px;
+
+  color: #ff7676;
+
+  font-size: 11px;
+  line-height: 14px;
 `;
 
 /* категории */
@@ -689,7 +747,7 @@ export const EditTextarea = styled(Textarea)`
   height: 155px;
   min-height: 155px;
 
-  margin: 0;
+  margin: 0 0 4px;
 
   padding: 11px 10px;
 
@@ -817,7 +875,7 @@ export const SmallButton = styled.button`
   }
 `;
 
-/* маленькая синяя кнопка задач (Сохранить / Создать задачу) — независима от PrimaryButton */
+/* маленькая синяя кнопка задач (Сохранить / Создать задачу) */
 
 export const SaveButton = styled.button`
   min-width: 66px;
