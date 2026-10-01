@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
 import {
-  CenterPage,
-  PageModal,
+  AuthPage,
+  AuthModal,
   NotFoundTitle,
   NotFoundText,
   PrimaryButton,
@@ -10,8 +10,8 @@ import {
 
 function NotFoundPage() {
   return (
-    <CenterPage>
-      <PageModal>
+    <AuthPage>
+      <AuthModal>
         <NotFoundTitle>404</NotFoundTitle>
 
         <NotFoundText>Страница не найдена</NotFoundText>
@@ -19,8 +19,8 @@ function NotFoundPage() {
         <Link to="/">
           <PrimaryButton type="button">Вернуться на главную</PrimaryButton>
         </Link>
-      </PageModal>
-    </CenterPage>
+      </AuthModal>
+    </AuthPage>
   );
 }
 

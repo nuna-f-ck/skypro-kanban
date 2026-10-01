@@ -1,26 +1,26 @@
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
+import AuthContext from "../context/AuthContext";
+
 import {
-  CenterPage,
-  PageModal,
+  AuthPage,
+  AuthModal,
   PageTitle,
   Actions,
   PrimaryButton,
   SecondaryButton,
 } from "./pages.styled";
 
-function ExitPage({ setIsAuth }) {
+function ExitPage() {
   const navigate = useNavigate();
 
+  const { logout } = useContext(AuthContext);
+
   const handleExit = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    logout();
 
-    setIsAuth(false);
-
-    navigate("/login", {
-      replace: true,
-    });
+    navigate("/login", { replace: true });
   };
 
   const handleCancel = () => {
@@ -28,8 +28,8 @@ function ExitPage({ setIsAuth }) {
   };
 
   return (
-    <CenterPage>
-      <PageModal>
+    <AuthPage>
+      <AuthModal>
         <PageTitle>Выйти из аккаунта?</PageTitle>
 
         <Actions>
@@ -41,8 +41,8 @@ function ExitPage({ setIsAuth }) {
             Нет, остаться
           </SecondaryButton>
         </Actions>
-      </PageModal>
-    </CenterPage>
+      </AuthModal>
+    </AuthPage>
   );
 }
 

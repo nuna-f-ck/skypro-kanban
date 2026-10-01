@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { loginUser } from "../services/auth";
+import AuthContext from "../context/AuthContext";
 
 import {
-  CenterPage,
-  PageModal,
+  AuthPage,
+  AuthModal,
   PageTitle,
   Form,
   Input,
@@ -13,8 +13,10 @@ import {
   Description,
 } from "./pages.styled";
 
-function LoginPage({ setIsAuth }) {
+function LoginPage() {
   const navigate = useNavigate();
+
+  const { login: loginUser } = useContext(AuthContext);
 
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
@@ -40,35 +42,20 @@ function LoginPage({ setIsAuth }) {
     try {
       setLoading(true);
 
-      const data = await loginUser({
-        login: login.trim(),
-        password,
-      });
+      await loginUser({ login: login.trim(), password });
 
-      console.log("Ответ login:", data);
-      const token = data?.user?.token;
+      navigate("/", { replace: true });
+    } catch (requestError) {
+      console.error("Ошибка входа:", requestError);
 
-      if (!token) {
-        setError("Сервер не вернул токен авторизации");
-        return;
-      }
+      const serverMessage = requestError.response?.data?.error;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      setIsAuth(true);
-
-      navigate("/", {
-        replace: true,
-      });
-    } catch (error) {
-      console.error("Ошибка входа:", error);
-      console.error("Ответ сервера:", error.response?.data);
-      const serverMessage = error.response?.data?.error;
       if (serverMessage) {
         setError(serverMessage);
-      } else if (error.response?.status === 400) {
+      } else if (requestError.response?.status === 400) {
         setError("Неверный логин или пароль");
+      } else if (requestError.message) {
+        setError(requestError.message);
       } else {
         setError("Ошибка подключения к серверу");
       }
@@ -78,14 +65,14 @@ function LoginPage({ setIsAuth }) {
   };
 
   return (
-    <CenterPage>
-      <PageModal>
+    <AuthPage>
+      <AuthModal>
         <PageTitle>Вход</PageTitle>
 
         <Form onSubmit={handleSubmit}>
           <Input
             type="text"
-            placeholder="Логин"
+            placeholder="Эл. почта"
             value={login}
             onChange={(event) => setLogin(event.target.value)}
           />
@@ -105,10 +92,11 @@ function LoginPage({ setIsAuth }) {
         </Form>
 
         <Description>
-          Нет аккаунта? <Link to="/register">Зарегистрироваться</Link>
+          Нужно зарегистрироваться?{" "}
+          <Link to="/register">Регистрируйтесь здесь</Link>
         </Description>
-      </PageModal>
-    </CenterPage>
+      </AuthModal>
+    </AuthPage>
   );
 }
 

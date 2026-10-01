@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 
+import AuthContext from "../../context/AuthContext";
 import PopUser from "../PopUser/PopUser";
 
 import { Container } from "../General/General.styled";
@@ -17,7 +18,7 @@ import {
 export function Header({ isDarkMode, setIsDarkMode }) {
   const [popState, setPopState] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const { user } = useContext(AuthContext);
 
   const togglePopUser = () => {
     setPopState((prev) => !prev);

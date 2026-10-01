@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/Header/Header";
-import { createTask } from "../services/tasks";
+import TaskContext from "../context/TaskContext";
 
 import {
   Page,
@@ -11,7 +11,7 @@ import {
   PageModal,
   PageTitle,
   FieldLabel,
-  Form,
+  TaskForm,
   LeftColumn,
   RightColumn,
   Input,
@@ -30,25 +30,13 @@ import {
   CalendarHint,
   FormFooter,
   ErrorMessage,
-  PrimaryButton,
+  SaveButton,
 } from "./pages.styled";
 
 const categories = [
-  {
-    value: "Web Design",
-    label: "Web Design",
-    variant: "orange",
-  },
-  {
-    value: "Research",
-    label: "Research",
-    variant: "green",
-  },
-  {
-    value: "Copywriting",
-    label: "Copywriting",
-    variant: "purple",
-  },
+  { value: "Web Design", label: "Web Design", variant: "orange" },
+  { value: "Research", label: "Research", variant: "green" },
+  { value: "Copywriting", label: "Copywriting", variant: "purple" },
 ];
 
 const WEEK_DAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
@@ -84,6 +72,8 @@ const parseDate = (value) => {
 function AddTaskPage({ isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
 
+  const { addTask } = useContext(TaskContext);
+
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("Research");
   const [description, setDescription] = useState("");
@@ -96,13 +86,10 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
 
   const calendarDays = useMemo(() => {
     const year = calendarDate.getFullYear();
-
     const month = calendarDate.getMonth();
 
     const firstDay = new Date(year, month, 1).getDay();
-
     const mondayOffset = (firstDay + 6) % 7;
-
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const days = [];
@@ -180,7 +167,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
     try {
       setLoading(true);
 
-      await createTask({
+      await addTask({
         title: title.trim(),
         topic: topic.trim(),
         status: "Без статуса",
@@ -211,7 +198,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
           <PageModal>
             <PageTitle>Создание задачи</PageTitle>
 
-            <Form onSubmit={handleSubmit}>
+            <TaskForm onSubmit={handleSubmit}>
               <LeftColumn>
                 <FieldLabel>Название задачи</FieldLabel>
 
@@ -307,11 +294,11 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
               <FormFooter>
                 {error && <ErrorMessage>{error}</ErrorMessage>}
 
-                <PrimaryButton type="submit" disabled={loading}>
+                <SaveButton type="submit" disabled={loading}>
                   {loading ? "Создание..." : "Создать задачу"}
-                </PrimaryButton>
+                </SaveButton>
               </FormFooter>
-            </Form>
+            </TaskForm>
           </PageModal>
         </CenterPage>
       </Overlay>
