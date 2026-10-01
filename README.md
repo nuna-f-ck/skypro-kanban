@@ -1,16 +1,32 @@
-# React + Vite
+# SkyPro Kanban
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Приложение-канбан-доска: авторизация, регистрация пользователей и управление задачами (создание, редактирование, удаление, фильтрация по статусу).
 
-Currently, two official plugins are available:
+## Стек
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React + React Router
+- styled-components
+- Axios
+- Context API (своя авторизация и управление задачами)
 
-## React Compiler
+## Основная функциональность
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Регистрация и вход по логину/паролю, токен хранится в `localStorage`.
+- Приватные маршруты — без авторизации доступны только страницы входа и регистрации.
+- Доска задач с колонками по статусам: «Без статуса», «Нужно сделать», «В работе», «Тестирование», «Готово».
+- Создание новой задачи (название, описание, категория, дата).
+- Редактирование и удаление задачи из карточки.
+- Валидация форм: пустые и состоящие только из пробелов поля не отправляются, ошибки показываются под нужным полем.
+- Обработка ошибок сервера (неверные данные, повторная регистрация, падение сервера) с понятными сообщениями пользователю.
+- Анимация загрузки при получении данных с сервера.
+- Состояние «Новых задач нет», если у пользователя пока нет задач.
+- Стилизованная страница 404 со ссылкой на главную.
 
-## Expanding the ESLint configuration
+## Управление состоянием
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `AuthContext` — пользователь, статус авторизации, методы `login`, `register`, `logout`.
+- `TaskContext` — список задач и методы `fetchTasks`, `addTask`, `editTask`, `removeTask`.
+
+## Дополнительные фичи
+
+- **Переключение темы (светлая/тёмная)** через `styled-components ThemeProvider` — переключатель находится в меню пользователя (иконка профиля в шапке).
