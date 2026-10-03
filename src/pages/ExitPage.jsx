@@ -3,16 +3,18 @@ import { useNavigate } from "react-router-dom";
 
 import AuthContext from "../context/AuthContext";
 
+import MainPage from "./MainPage";
+
 import {
-  AuthPage,
-  AuthModal,
+  ExitOverlay,
+  ExitModal,
   PageTitle,
   Actions,
   PrimaryButton,
   SecondaryButton,
 } from "./pages.styled";
 
-function ExitPage() {
+function ExitPage({ isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
 
   const { logout } = useContext(AuthContext);
@@ -28,21 +30,26 @@ function ExitPage() {
   };
 
   return (
-    <AuthPage>
-      <AuthModal>
-        <PageTitle>Выйти из аккаунта?</PageTitle>
+    <>
+      {/* затемнённая доска за окном подтверждения, как в макете */}
+      <MainPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
-        <Actions>
-          <PrimaryButton type="button" onClick={handleExit}>
-            Да, выйти
-          </PrimaryButton>
+      <ExitOverlay>
+        <ExitModal role="dialog" aria-modal="true" aria-labelledby="exit-title">
+          <PageTitle id="exit-title">Выйти из аккаунта?</PageTitle>
 
-          <SecondaryButton type="button" onClick={handleCancel}>
-            Нет, остаться
-          </SecondaryButton>
-        </Actions>
-      </AuthModal>
-    </AuthPage>
+          <Actions>
+            <PrimaryButton type="button" onClick={handleExit}>
+              Да, выйти
+            </PrimaryButton>
+
+            <SecondaryButton type="button" onClick={handleCancel}>
+              Нет, остаться
+            </SecondaryButton>
+          </Actions>
+        </ExitModal>
+      </ExitOverlay>
+    </>
   );
 }
 

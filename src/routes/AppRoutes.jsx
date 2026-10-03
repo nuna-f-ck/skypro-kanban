@@ -16,7 +16,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 
 const lightTheme = {
   body: "#F1F1F1",
-  mainBackground: "#F1F1F1",
+  mainBackground: "#EAEEF6",
   headerBackground: "#FFFFFF",
   cardBackground: "#FFFFFF",
   title: "#000000",
@@ -90,7 +90,15 @@ function AppRoutes() {
               }
             />
 
-            <Route path="/exit" element={<ExitPage />} />
+            <Route
+              path="/exit"
+              element={
+                <ExitPage
+                  isDarkMode={isDarkMode}
+                  setIsDarkMode={setIsDarkMode}
+                />
+              }
+            />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />

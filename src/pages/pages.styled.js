@@ -1,4 +1,10 @@
-import styled, { keyframes } from "styled-components";
+import styled, { css, keyframes } from "styled-components";
+
+import { mobile } from "../styles/breakpoints";
+
+const isDark = (props) => props.theme.text === "#FFFFFF";
+
+const ERROR_COLOR = "#f84d4d";
 
 /* общие страницы */
 
@@ -8,6 +14,8 @@ export const Page = styled.div`
 
   background-color: ${(props) => props.theme.mainBackground};
 `;
+
+/* затемнение с модалкой на десктопе; на телефоне — обычная страница (макет) */
 
 export const Overlay = styled.div`
   position: fixed;
@@ -23,6 +31,19 @@ export const Overlay = styled.div`
   background: rgba(0, 0, 0, 0.72);
 
   box-sizing: border-box;
+
+  ${mobile} {
+    position: static;
+
+    display: block;
+
+    min-height: calc(100vh - 70px);
+    min-height: calc(100dvh - 70px);
+
+    padding: 0;
+
+    background: ${(props) => props.theme.cardBackground};
+  }
 `;
 
 export const CenterPage = styled.div`
@@ -35,6 +56,7 @@ export const CenterPage = styled.div`
 
 export const AuthPage = styled.div`
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
 
   display: flex;
@@ -42,9 +64,33 @@ export const AuthPage = styled.div`
   justify-content: center;
 
   background-color: ${(props) => props.theme.mainBackground};
+
+  ${mobile} {
+    padding: 0 16px;
+
+    background-color: ${(props) => props.theme.cardBackground};
+  }
 `;
 
-/* спиннер загрузки */
+/* выход: затемнённая доска + окно подтверждения */
+
+export const ExitOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: rgba(0, 0, 0, 0.5);
+
+  box-sizing: border-box;
+`;
+
+/* спиннер загрузки (только при первой загрузке доски) */
 
 const spin = keyframes`
   to {
@@ -113,16 +159,32 @@ const ModalBase = styled.div`
   scrollbar-width: thin;
 `;
 
-/* модальное окно для задач (AddTaskPage / CardPage) — широкое */
+/* модальное окно для задач (AddTaskPage / CardPage) */
 
 export const PageModal = styled(ModalBase)`
   width: 100%;
   max-width: 490px;
 
   padding: 30px 22px 37px;
+
+  ${mobile} {
+    max-width: none;
+    max-height: none;
+
+    padding: 24px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+
+    overflow: visible;
+
+    border: none;
+    border-radius: 0;
+
+    box-shadow: none;
+  }
 `;
 
-/* карточка для страниц авторизации/выхода/404 — узкая, независима от PageModal */
+export const EditModal = PageModal;
+
+/* страницы авторизации / 404: на десктопе карточка, на телефоне — весь экран */
 
 export const AuthModal = styled(ModalBase)`
   width: 100%;
@@ -131,6 +193,36 @@ export const AuthModal = styled(ModalBase)`
   padding: 40px 36px;
 
   text-align: center;
+
+  ${mobile} {
+    max-height: none;
+
+    padding: 0;
+
+    overflow: visible;
+
+    background-color: transparent;
+
+    border: none;
+    border-radius: 0;
+
+    box-shadow: none;
+  }
+`;
+
+/* окно подтверждения выхода — карточка и на десктопе, и на телефоне */
+
+export const ExitModal = styled(ModalBase)`
+  width: 100%;
+  max-width: 400px;
+
+  padding: 40px 36px;
+
+  text-align: center;
+
+  ${mobile} {
+    padding: 24px 16px;
+  }
 `;
 
 /* заголовок */
@@ -143,25 +235,49 @@ export const PageTitle = styled.h1`
   font-size: 16px;
   line-height: 20px;
   font-weight: 700;
+
+  ${mobile} {
+    margin-bottom: 24px;
+
+    font-size: 20px;
+    line-height: 24px;
+  }
 `;
 
-/* лабели */
+/* лейблы */
+
+const labelStyles = css`
+  color: ${(props) => props.theme.title};
+
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 600;
+
+  ${mobile} {
+    font-size: 14px;
+    line-height: 18px;
+  }
+`;
 
 export const FieldLabel = styled.label`
   display: block;
 
   margin: 0 0 11px;
 
-  color: ${(props) => props.theme.title};
+  ${labelStyles}
 
-  font-size: 12px;
-  line-height: 15px;
-  font-weight: 600;
+  ${mobile} {
+    margin-bottom: 10px;
+  }
 `;
 
 export const CategoryLabel = styled(FieldLabel)`
   margin-top: 2px;
   margin-bottom: 10px;
+
+  ${mobile} {
+    margin-top: 6px;
+  }
 `;
 
 /* форма авторизации (Login / Register) — простая колонка */
@@ -171,7 +287,7 @@ export const Form = styled.form`
   flex-direction: column;
 `;
 
-/* форма для AddTaskPage — двухколоночная сетка (поле + календарь) */
+/* форма AddTaskPage — две колонки (поля + календарь); на телефоне одна колонка */
 
 export const TaskForm = styled.form`
   width: 100%;
@@ -184,14 +300,37 @@ export const TaskForm = styled.form`
 
   column-gap: 17px;
   row-gap: 0;
+
+  ${mobile} {
+    display: flex;
+    flex-direction: column;
+  }
 `;
 
 export const LeftColumn = styled.div`
   min-width: 0;
+
+  /* на телефоне блоки полей встают в общий порядок формы: название,
+     описание, календарь, категория (см. $order у FieldGroup) */
+  ${mobile} {
+    display: contents;
+  }
 `;
 
 export const RightColumn = styled.div`
   min-width: 0;
+
+  ${mobile} {
+    order: 3;
+  }
+`;
+
+export const FieldGroup = styled.div`
+  min-width: 0;
+
+  ${mobile} {
+    order: ${(props) => props.$order ?? 0};
+  }
 `;
 
 /* инпуты */
@@ -208,7 +347,8 @@ export const Input = styled.input`
   padding: 0 10px;
 
   border: 1px solid
-    ${(props) => (props.theme.text === "#FFFFFF" ? "#464856" : "#d4dbe5")};
+    ${(props) =>
+      props.$error ? ERROR_COLOR : isDark(props) ? "#464856" : "#d4dbe5"};
 
   border-radius: 6px;
 
@@ -222,21 +362,28 @@ export const Input = styled.input`
   font-size: 12px;
 
   &::placeholder {
-    color: ${(props) =>
-      props.theme.text === "#FFFFFF" ? "#777a89" : "#8c939f"};
+    color: ${(props) => (isDark(props) ? "#777a89" : "#8c939f")};
   }
 
   &:focus {
-    border-color: #565eef;
+    border-color: ${(props) => (props.$error ? ERROR_COLOR : "#565eef")};
   }
 
   &::-webkit-calendar-picker-indicator {
-    filter: ${(props) =>
-      props.theme.text === "#FFFFFF" ? "invert(0.8)" : "none"};
+    filter: ${(props) => (isDark(props) ? "invert(0.8)" : "none")};
+  }
+
+  ${mobile} {
+    height: 40px;
+
+    margin-bottom: 10px;
+
+    font-size: 14px;
   }
 `;
 
-/* textarea */
+/* textarea ($compact — мелкий шрифт как в окне редактирования на десктопе,
+   $readOnly — режим просмотра задачи) */
 
 export const Textarea = styled.textarea`
   display: block;
@@ -252,7 +399,12 @@ export const Textarea = styled.textarea`
   resize: none;
 
   border: 1px solid
-    ${(props) => (props.theme.text === "#FFFFFF" ? "#464856" : "#d4dbe5")};
+    ${(props) =>
+      props.$readOnly
+        ? "transparent"
+        : isDark(props)
+          ? "#464856"
+          : "#d4dbe5"};
 
   border-radius: 6px;
 
@@ -260,19 +412,44 @@ export const Textarea = styled.textarea`
 
   color: ${(props) => props.theme.text};
 
-  background-color: ${(props) => props.theme.cardBackground};
+  background-color: ${(props) =>
+    props.$readOnly ? props.theme.mainBackground : props.theme.cardBackground};
 
   font-family: inherit;
   font-size: 12px;
   line-height: 17px;
 
+  ${(props) =>
+    props.$compact &&
+    css`
+      font-size: 10px;
+      line-height: 16px;
+    `}
+
   &::placeholder {
-    color: ${(props) =>
-      props.theme.text === "#FFFFFF" ? "#777a89" : "#8c939f"};
+    color: ${(props) => (isDark(props) ? "#777a89" : "#8c939f")};
   }
 
   &:focus {
-    border-color: #565eef;
+    border-color: ${(props) => (props.$readOnly ? "transparent" : "#565eef")};
+  }
+
+  ${mobile} {
+    height: 64px;
+    min-height: 40px;
+    max-height: 200px;
+
+    margin-bottom: 10px;
+    padding: 9px 10px;
+
+    font-size: 14px;
+    line-height: 20px;
+
+    /* по макету поле однострочное, но растёт вместе с текстом */
+    @supports (field-sizing: content) {
+      field-sizing: content;
+      height: auto;
+    }
   }
 `;
 
@@ -281,10 +458,30 @@ export const Textarea = styled.textarea`
 export const FieldError = styled.p`
   margin: 0 0 10px;
 
-  color: #ff7676;
+  color: ${ERROR_COLOR};
 
   font-size: 11px;
   line-height: 14px;
+
+  text-align: left;
+
+  ${mobile} {
+    font-size: 12px;
+    line-height: 16px;
+  }
+`;
+
+/* общая ошибка формы авторизации (под полями, над кнопкой) */
+
+export const FormError = styled.p`
+  margin: 2px 0 16px;
+
+  color: ${ERROR_COLOR};
+
+  font-size: 12px;
+  line-height: 16px;
+
+  text-align: left;
 `;
 
 /* категории */
@@ -296,6 +493,10 @@ export const CategoryList = styled.div`
   flex-wrap: wrap;
 
   gap: 6px;
+
+  ${mobile} {
+    gap: 8px;
+  }
 `;
 
 export const CategoryButton = styled.button`
@@ -335,6 +536,15 @@ export const CategoryButton = styled.button`
     opacity: 1;
     transform: translateY(-1px);
   }
+
+  ${mobile} {
+    height: 28px;
+
+    padding: 0 16px;
+
+    font-size: 12px;
+    line-height: 28px;
+  }
 `;
 
 /* календарь */
@@ -349,6 +559,10 @@ export const CalendarHeader = styled.div`
   justify-content: space-between;
 
   margin: 0 0 8px;
+
+  ${mobile} {
+    margin-bottom: 12px;
+  }
 `;
 
 export const CalendarMonth = styled.div`
@@ -357,6 +571,13 @@ export const CalendarMonth = styled.div`
   font-size: 11px;
   line-height: 14px;
   font-weight: 500;
+
+  ${mobile} {
+    color: #94a6be;
+
+    font-size: 14px;
+    line-height: 18px;
+  }
 `;
 
 export const CalendarArrow = styled.button`
@@ -381,6 +602,16 @@ export const CalendarArrow = styled.button`
   &:hover {
     color: ${(props) => props.theme.title};
   }
+
+  ${mobile} {
+    width: 28px;
+    height: 28px;
+
+    color: #94a6be;
+
+    font-size: 24px;
+    line-height: 26px;
+  }
 `;
 
 export const WeekDays = styled.div`
@@ -389,6 +620,10 @@ export const WeekDays = styled.div`
   grid-template-columns: repeat(7, 1fr);
 
   margin-bottom: 3px;
+
+  ${mobile} {
+    margin-bottom: 6px;
+  }
 `;
 
 export const WeekDay = styled.span`
@@ -399,6 +634,13 @@ export const WeekDay = styled.span`
   font-size: 8px;
   line-height: 14px;
   font-weight: 500;
+
+  ${mobile} {
+    color: #94a6be;
+
+    font-size: 11px;
+    line-height: 16px;
+  }
 `;
 
 export const CalendarGrid = styled.div`
@@ -407,6 +649,10 @@ export const CalendarGrid = styled.div`
   grid-template-columns: repeat(7, 1fr);
 
   row-gap: 2px;
+
+  ${mobile} {
+    row-gap: 4px;
+  }
 `;
 
 export const DayButton = styled.button`
@@ -418,7 +664,7 @@ export const DayButton = styled.button`
   border: none;
   border-radius: 4px;
 
-  background: ${(props) => (props.$selected ? "#565eef" : "transparent")};
+  background: ${(props) => (props.$selected ? "#94a6be" : "transparent")};
 
   color: ${(props) =>
     props.$selected
@@ -439,7 +685,7 @@ export const DayButton = styled.button`
   &:hover:not(:disabled) {
     background: ${(props) =>
       props.$selected
-        ? "#565eef"
+        ? "#94a6be"
         : props.theme.text === "#FFFFFF"
           ? "#2c2e3a"
           : "#e6e8ec"};
@@ -450,6 +696,21 @@ export const DayButton = styled.button`
   &:disabled {
     cursor: default;
   }
+
+  ${mobile} {
+    width: 36px;
+    height: 36px;
+
+    margin: 0 auto;
+
+    border-radius: 50%;
+
+    color: ${(props) =>
+      props.$selected ? "#ffffff" : props.theme.text};
+
+    font-size: 12px;
+    line-height: 36px;
+  }
 `;
 
 export const CalendarHint = styled.p`
@@ -459,9 +720,23 @@ export const CalendarHint = styled.p`
 
   font-size: 8px;
   line-height: 11px;
+
+  & b {
+    color: ${(props) => props.theme.text};
+    font-weight: 500;
+  }
+
+  ${mobile} {
+    margin: 14px 0 18px;
+
+    color: ${(props) => props.theme.text};
+
+    font-size: 12px;
+    line-height: 16px;
+  }
 `;
 
-/* футер для AddTask */
+/* футер AddTask */
 
 export const FormFooter = styled.div`
   grid-column: 1 / -1;
@@ -476,6 +751,17 @@ export const FormFooter = styled.div`
   min-height: 38px;
 
   margin-top: 18px;
+
+  ${mobile} {
+    order: 5;
+
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 10px;
+
+    margin-top: 6px;
+  }
 `;
 
 export const ErrorMessage = styled.p`
@@ -483,10 +769,17 @@ export const ErrorMessage = styled.p`
 
   margin: 0;
 
-  color: #ff7676;
+  color: ${ERROR_COLOR};
 
   font-size: 10px;
   line-height: 14px;
+
+  ${mobile} {
+    flex: none;
+
+    font-size: 12px;
+    line-height: 16px;
+  }
 `;
 
 /* крупная кнопка для авторизации: Вход / Регистрация / Выйти */
@@ -521,9 +814,10 @@ export const PrimaryButton = styled.button`
     background-color: #474bd0;
   }
 
+  /* неактивная кнопка серая, как в макете «Ошибка» */
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.65;
+    background-color: #94a6be;
   }
 `;
 
@@ -534,12 +828,12 @@ export const SecondaryButton = styled.button`
 
   padding: 0 16px;
 
-  border: 1px solid #565eef;
+  border: 1px solid ${(props) => (isDark(props) ? "#ffffff" : "#565eef")};
   border-radius: 6px;
 
   background: transparent;
 
-  color: #565eef;
+  color: ${(props) => (isDark(props) ? "#ffffff" : "#565eef")};
 
   font-family: inherit;
 
@@ -556,6 +850,7 @@ export const SecondaryButton = styled.button`
 
   &:hover {
     background: #565eef;
+    border-color: #565eef;
     color: #ffffff;
   }
 `;
@@ -582,6 +877,11 @@ export const Description = styled.p`
 
     text-decoration: underline;
   }
+
+  ${mobile} {
+    font-size: 12px;
+    line-height: 16px;
+  }
 `;
 
 export const Actions = styled.div`
@@ -593,6 +893,15 @@ export const Actions = styled.div`
 
   & > button {
     flex: 1 1 0;
+  }
+
+  ${mobile} {
+    flex-direction: column;
+
+    & > button {
+      flex: none;
+      width: 100%;
+    }
   }
 `;
 
@@ -613,13 +922,7 @@ export const NotFoundText = styled.p`
   font-size: 18px;
 `;
 
-/* CardPage редактирование задачи */
-
-export const EditModal = styled(PageModal)`
-  max-width: 490px;
-
-  padding: 30px 22px 37px;
-`;
+/* CardPage: просмотр и редактирование задачи */
 
 export const TopRow = styled.div`
   display: flex;
@@ -630,6 +933,10 @@ export const TopRow = styled.div`
   gap: 15px;
 
   margin-bottom: 16px;
+
+  ${mobile} {
+    margin-bottom: 20px;
+  }
 `;
 
 export const TitleEditor = styled.input`
@@ -655,16 +962,35 @@ export const TitleEditor = styled.input`
   &::placeholder {
     color: ${(props) => props.theme.title};
   }
+
+  ${mobile} {
+    font-size: 20px;
+    line-height: 24px;
+  }
+`;
+
+/* показывается только на десктопе / только на телефоне */
+
+export const DesktopOnly = styled.div`
+  ${mobile} {
+    display: none;
+  }
+`;
+
+export const CategorySection = styled.div`
+  display: none;
+
+  ${mobile} {
+    display: block;
+
+    margin-bottom: 24px;
+  }
 `;
 
 export const StatusLabel = styled.div`
   margin-bottom: 10px;
 
-  color: ${(props) => props.theme.title};
-
-  font-size: 12px;
-  line-height: 15px;
-  font-weight: 600;
+  ${labelStyles}
 `;
 
 export const StatusList = styled.div`
@@ -675,6 +1001,12 @@ export const StatusList = styled.div`
   gap: 6px;
 
   margin-bottom: 14px;
+
+  ${mobile} {
+    gap: 8px;
+
+    margin-bottom: 20px;
+  }
 `;
 
 export const StatusButton = styled.button`
@@ -683,20 +1015,22 @@ export const StatusButton = styled.button`
   padding: 0 13px;
 
   border: 1px solid
-    ${(props) => (props.theme.text === "#FFFFFF" ? "#464856" : "#c8cdd5")};
+    ${(props) =>
+      props.$active
+        ? "#94a6be"
+        : props.theme.text === "#FFFFFF"
+          ? "#464856"
+          : "#c8cdd5"};
 
   border-radius: 13px;
 
-  background: ${(props) =>
-    props.$active
-      ? props.theme.text === "#FFFFFF"
-        ? "#9caeca"
-        : "#d8e0ee"
-      : "transparent"};
+  background: ${(props) => (props.$active ? "#94a6be" : "transparent")};
 
   color: ${(props) =>
     props.$active
-      ? "#20212c"
+      ? props.theme.text === "#FFFFFF"
+        ? "#20212c"
+        : "#ffffff"
       : props.theme.text === "#FFFFFF"
         ? "#aeb0bc"
         : "#626975"};
@@ -713,11 +1047,24 @@ export const StatusButton = styled.button`
     background-color 0.15s ease,
     color 0.15s ease;
 
-  &:hover {
-    background: ${(props) =>
-      props.theme.text === "#FFFFFF" ? "#9caeca" : "#d8e0ee"};
+  &:hover:not(:disabled) {
+    background: #94a6be;
+    border-color: #94a6be;
 
-    color: #20212c;
+    color: ${(props) => (props.theme.text === "#FFFFFF" ? "#20212c" : "#ffffff")};
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  ${mobile} {
+    height: 28px;
+
+    padding: 0 14px;
+
+    font-size: 12px;
+    line-height: 26px;
   }
 `;
 
@@ -729,97 +1076,47 @@ export const ContentGrid = styled.div`
     145px;
 
   gap: 17px;
+
+  ${mobile} {
+    grid-template-columns: minmax(0, 1fr);
+
+    gap: 0;
+  }
 `;
 
 export const DescriptionLabel = styled.div`
   margin-bottom: 8px;
 
-  color: ${(props) => props.theme.title};
+  ${labelStyles}
 
-  font-size: 12px;
-  line-height: 15px;
-  font-weight: 600;
-`;
-
-export const EditTextarea = styled(Textarea)`
-  width: 100%;
-
-  height: 155px;
-  min-height: 155px;
-
-  margin: 0 0 4px;
-
-  padding: 11px 10px;
-
-  font-size: 10px;
-  line-height: 16px;
+  ${mobile} {
+    margin-bottom: 10px;
+  }
 `;
 
 export const DateLabel = styled.div`
   margin-bottom: 8px;
 
-  color: ${(props) => props.theme.title};
+  ${labelStyles}
 
-  font-size: 12px;
-  line-height: 15px;
-  font-weight: 600;
-`;
-
-export const EditCalendar = styled(Calendar)`
-  width: 100%;
-`;
-
-export const EditCalendarHeader = styled(CalendarHeader)`
-  margin-bottom: 7px;
-`;
-
-export const EditCalendarMonth = styled(CalendarMonth)`
-  font-size: 10px;
-  line-height: 14px;
-`;
-
-export const EditCalendarArrow = styled(CalendarArrow)`
-  width: 20px;
-  height: 20px;
-
-  font-size: 19px;
-  line-height: 18px;
-`;
-
-export const EditWeekDays = styled(WeekDays)`
-  margin-bottom: 3px;
-`;
-
-export const EditWeekDay = styled(WeekDay)`
-  font-size: 8px;
-  line-height: 14px;
-`;
-
-export const EditCalendarGrid = styled(CalendarGrid)`
-  row-gap: 2px;
-`;
-
-export const EditDayButton = styled(DayButton)`
-  height: 18px;
-
-  font-size: 8px;
-  line-height: 18px;
-`;
-
-export const EditCalendarHint = styled(CalendarHint)`
-  margin-top: 9px;
-
-  font-size: 8px;
-  line-height: 11px;
+  ${mobile} {
+    margin-top: 4px;
+    margin-bottom: 12px;
+  }
 `;
 
 export const ErrorText = styled.div`
   margin-top: 9px;
 
-  color: #ff7676;
+  color: ${ERROR_COLOR};
 
   font-size: 10px;
   line-height: 14px;
+
+  ${mobile} {
+    font-size: 12px;
+    line-height: 16px;
+  }
 `;
 
 export const BottomRow = styled.div`
@@ -831,6 +1128,13 @@ export const BottomRow = styled.div`
   gap: 10px;
 
   margin-top: 17px;
+
+  ${mobile} {
+    flex-direction: column;
+    align-items: stretch;
+
+    margin-top: 20px;
+  }
 `;
 
 export const LeftButtons = styled.div`
@@ -841,6 +1145,11 @@ export const LeftButtons = styled.div`
   gap: 6px;
 
   flex-wrap: wrap;
+
+  /* на телефоне кнопки встают в один столбец в порядке макета ($order) */
+  ${mobile} {
+    display: contents;
+  }
 `;
 
 export const SmallButton = styled.button`
@@ -873,9 +1182,24 @@ export const SmallButton = styled.button`
     cursor: not-allowed;
     opacity: 0.5;
   }
+
+  ${mobile} {
+    order: ${(props) => props.$order ?? 0};
+
+    width: 100%;
+    height: 40px;
+
+    border-color: ${(props) => (isDark(props) ? "#ffffff" : "#565eef")};
+    border-radius: 6px;
+
+    color: ${(props) => (isDark(props) ? "#ffffff" : "#565eef")};
+
+    font-size: 14px;
+    line-height: 38px;
+  }
 `;
 
-/* маленькая синяя кнопка задач (Сохранить / Создать задачу) */
+/* маленькая синяя кнопка задач (Сохранить / Создать задачу / Закрыть) */
 
 export const SaveButton = styled.button`
   min-width: 66px;
@@ -909,11 +1233,21 @@ export const SaveButton = styled.button`
     cursor: not-allowed;
     opacity: 0.65;
   }
+
+  ${mobile} {
+    order: ${(props) => props.$order ?? 0};
+
+    width: 100%;
+    height: 40px;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+    line-height: 40px;
+  }
 `;
 
-export const DeleteButton = styled(SmallButton)`
-  color: ${(props) => props.theme.text};
-`;
+export const DeleteButton = SmallButton;
 
 export const CloseButton = styled(SaveButton)`
   min-width: 57px;

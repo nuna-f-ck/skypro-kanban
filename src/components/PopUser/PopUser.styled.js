@@ -1,5 +1,9 @@
 import styled from "styled-components";
 
+import { mobile } from "../../styles/breakpoints";
+
+const isDark = (props) => props.theme.text === "#FFFFFF";
+
 export const PopUserWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -11,13 +15,18 @@ export const PopUserWrapper = styled.div`
   z-index: 10;
 
   width: 213px;
+  max-width: calc(100vw - 32px);
   padding: 20px;
 
   background-color: ${(props) => props.theme.cardBackground};
-  border: 0.7px solid #d4dbe5;
+  border: 0.7px solid ${(props) => (isDark(props) ? "#3a3b4b" : "#d4dbe5")};
   border-radius: 10px;
 
   box-shadow: 0px 4px 67px -12px rgba(0, 0, 0, 0.13);
+
+  ${mobile} {
+    top: 56px;
+  }
 `;
 
 export const UserName = styled.p`
@@ -43,6 +52,10 @@ export const ThemeRow = styled.div`
   justify-content: space-between;
   margin-bottom: 30px;
   gap: 40px;
+
+  ${mobile} {
+    gap: 24px;
+  }
 `;
 
 export const ThemeText = styled.p`
@@ -54,15 +67,18 @@ export const ThemeText = styled.p`
 
 export const ThemeCheckbox = styled.input`
   position: relative;
+  flex-shrink: 0;
   width: 24px;
   height: 13px;
   border-radius: 100px;
 
-  background: #eaeef6;
+  background: ${(props) => (props.checked ? "#565eef" : "#eaeef6")};
 
   outline: none;
   appearance: none;
   cursor: pointer;
+
+  transition: background-color 0.2s;
 
   &::before {
     content: "";
@@ -74,7 +90,7 @@ export const ThemeCheckbox = styled.input`
     height: 11px;
 
     border-radius: 50%;
-    background-color: #565eef;
+    background-color: ${(props) => (props.checked ? "#ffffff" : "#565eef")};
 
     transition: 0.2s;
   }
@@ -89,23 +105,22 @@ export const LogoutButton = styled.button`
   align-items: center;
 
   background: transparent;
-  color: #565eef;
+  color: ${(props) => (isDark(props) ? "#ffffff" : "#565eef")};
 
   border-radius: 4px;
-  border: 1px solid #565eef;
+  border: 1px solid ${(props) => (isDark(props) ? "#ffffff" : "#565eef")};
+
+  font-size: 14px;
 
   cursor: pointer;
-
-  & a {
-    color: #565eef;
-  }
 
   &:hover {
     background-color: #33399b;
     border-color: #33399b;
+    color: #ffffff;
+  }
 
-    & a {
-      color: #ffffff;
-    }
+  ${mobile} {
+    width: 100%;
   }
 `;

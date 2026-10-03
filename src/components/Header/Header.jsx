@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import AuthContext from "../../context/AuthContext";
 import PopUser from "../PopUser/PopUser";
@@ -19,6 +19,10 @@ export function Header({ isDarkMode, setIsDarkMode }) {
   const [popState, setPopState] = useState(false);
 
   const { user } = useContext(AuthContext);
+  const { pathname } = useLocation();
+
+  // На телефоне кнопка «Создать новую задачу» закреплена внизу только на доске
+  const isBoardPage = pathname === "/" || pathname === "/exit";
 
   const togglePopUser = () => {
     setPopState((prev) => !prev);
@@ -38,7 +42,11 @@ export function Header({ isDarkMode, setIsDarkMode }) {
           </HeaderLogo>
 
           <HeaderNav>
-            <HeaderBtnMainNew as={Link} to="/card/add">
+            <HeaderBtnMainNew
+              as={Link}
+              to="/card/add"
+              $hideOnMobile={!isBoardPage}
+            >
               Создать новую задачу
             </HeaderBtnMainNew>
 

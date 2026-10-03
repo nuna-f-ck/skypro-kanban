@@ -17,7 +17,7 @@ import {
 
 function MainPage({ isDarkMode, setIsDarkMode }) {
   const { logout } = useContext(AuthContext);
-  const { tasks, loading, error, fetchTasks } = useContext(TaskContext);
+  const { tasks, isLoaded, error, fetchTasks } = useContext(TaskContext);
 
   useEffect(() => {
     let ignore = false;
@@ -35,28 +35,41 @@ function MainPage({ isDarkMode, setIsDarkMode }) {
     };
   }, [fetchTasks, logout]);
 
+  // Спиннер — только при самой первой загрузке доски. Когда задачи уже есть
+  // (например, после создания или редактирования карточки), доска показывается
+  // сразу, а данные обновляются в фоне.
+  let content;
+
+  if (!isLoaded && error) {
+    content = (
+      <CenterPage>
+        <Description>{error}</Description>
+      </CenterPage>
+    );
+  } else if (!isLoaded) {
+    content = (
+      <CenterPage>
+        <LoadingState>
+          <Spinner />
+          Загрузка задач...
+        </LoadingState>
+      </CenterPage>
+    );
+  } else if (tasks.length === 0) {
+    content = (
+      <CenterPage>
+        <EmptyState>Новых задач нет</EmptyState>
+      </CenterPage>
+    );
+  } else {
+    content = <Main tasks={tasks} />;
+  }
+
   return (
     <Page>
       <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
-      {loading ? (
-        <CenterPage>
-          <LoadingState>
-            <Spinner />
-            Загрузка задач...
-          </LoadingState>
-        </CenterPage>
-      ) : error ? (
-        <CenterPage>
-          <Description>{error}</Description>
-        </CenterPage>
-      ) : tasks.length === 0 ? (
-        <CenterPage>
-          <EmptyState>Новых задач нет</EmptyState>
-        </CenterPage>
-      ) : (
-        <Main tasks={tasks} />
-      )}
+      {content}
     </Page>
   );
 }

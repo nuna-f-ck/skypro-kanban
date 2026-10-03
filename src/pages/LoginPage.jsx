@@ -11,9 +11,13 @@ import {
   Form,
   Input,
   FieldError,
+  FormError,
   PrimaryButton,
   Description,
 } from "./pages.styled";
+
+const CREDENTIALS_ERROR =
+  "Введенные вами данные не распознаны. Проверьте свой логин и пароль и повторите попытку входа.";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -26,6 +30,10 @@ function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState({ login: "", password: "" });
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Сервер ответил, что логин/пароль не подошли: подсвечиваем оба поля красным,
+  // кнопка «Войти» неактивна, пока пользователь не поправит данные (макет «Ошибка»)
+  const hasCredentialsError = formError === CREDENTIALS_ERROR;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -50,7 +58,11 @@ function LoginPage() {
 
       navigate("/", { replace: true });
     } catch (requestError) {
-      setFormError(getErrorMessage(requestError, "Неверный логин или пароль"));
+      setFormError(
+        requestError.response
+          ? CREDENTIALS_ERROR
+          : getErrorMessage(requestError, CREDENTIALS_ERROR),
+      );
     } finally {
       setLoading(false);
     }
@@ -66,9 +78,11 @@ function LoginPage() {
             type="text"
             placeholder="Эл. почта"
             value={login}
+            $error={Boolean(fieldErrors.login) || hasCredentialsError}
             onChange={(event) => {
               setLogin(event.target.value);
               setFieldErrors((prev) => ({ ...prev, login: "" }));
+              setFormError("");
             }}
           />
           {fieldErrors.login && <FieldError>{fieldErrors.login}</FieldError>}
@@ -77,18 +91,20 @@ function LoginPage() {
             type="password"
             placeholder="Пароль"
             value={password}
+            $error={Boolean(fieldErrors.password) || hasCredentialsError}
             onChange={(event) => {
               setPassword(event.target.value);
               setFieldErrors((prev) => ({ ...prev, password: "" }));
+              setFormError("");
             }}
           />
           {fieldErrors.password && (
             <FieldError>{fieldErrors.password}</FieldError>
           )}
 
-          {formError && <Description>{formError}</Description>}
+          {formError && <FormError>{formError}</FormError>}
 
-          <PrimaryButton type="submit" disabled={loading}>
+          <PrimaryButton type="submit" disabled={loading || hasCredentialsError}>
             {loading ? "Выполняется вход..." : "Войти"}
           </PrimaryButton>
         </Form>

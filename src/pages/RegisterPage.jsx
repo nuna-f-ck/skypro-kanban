@@ -11,6 +11,7 @@ import {
   Form,
   Input,
   FieldError,
+  FormError,
   PrimaryButton,
   Description,
 } from "./pages.styled";
@@ -93,6 +94,7 @@ function RegisterPage() {
             type="text"
             placeholder="Имя"
             value={name}
+            $error={Boolean(fieldErrors.name)}
             onChange={(event) => {
               setName(event.target.value);
               setFieldErrors((prev) => ({ ...prev, name: "" }));
@@ -104,6 +106,7 @@ function RegisterPage() {
             type="text"
             placeholder="Эл. почта"
             value={login}
+            $error={Boolean(fieldErrors.login)}
             onChange={(event) => {
               setLogin(event.target.value);
               setFieldErrors((prev) => ({ ...prev, login: "" }));
@@ -115,6 +118,7 @@ function RegisterPage() {
             type="password"
             placeholder="Пароль"
             value={password}
+            $error={Boolean(fieldErrors.password)}
             onChange={(event) => {
               setPassword(event.target.value);
               setFieldErrors((prev) => ({ ...prev, password: "" }));
@@ -124,7 +128,7 @@ function RegisterPage() {
             <FieldError>{fieldErrors.password}</FieldError>
           )}
 
-          {formError && <Description>{formError}</Description>}
+          {formError && <FormError>{formError}</FormError>}
 
           <PrimaryButton type="submit" disabled={loading}>
             {loading ? "Регистрация..." : "Зарегистрироваться"}
