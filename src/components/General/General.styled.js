@@ -1,5 +1,7 @@
 import styled, { createGlobalStyle } from "styled-components";
 
+import { mobile } from "../../styles/breakpoints";
+
 export const GlobalStyle = createGlobalStyle`
   *,
   *::before,
@@ -7,6 +9,11 @@ export const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   html,
@@ -51,8 +58,6 @@ export const GlobalStyle = createGlobalStyle`
     width: 100%;
     min-height: 100%;
   }
-
-
 `;
 
 export const Container = styled.div`
@@ -61,7 +66,7 @@ export const Container = styled.div`
   margin: 0 auto;
   padding: 0 30px;
 
-  @media screen and (max-width: 495px) {
+  ${mobile} {
     padding: 0 16px;
   }
 `;

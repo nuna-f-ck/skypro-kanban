@@ -3,6 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 import Header from "../components/Header/Header";
 import TaskContext from "../context/TaskContext";
+import { getErrorMessage } from "../utils/getErrorMessage";
+import {
+  MONTHS,
+  WEEK_DAYS,
+  getCalendarDays,
+  parseDate,
+  toInputDate,
+} from "../utils/calendar";
 
 import {
   Page,
@@ -14,8 +22,10 @@ import {
   TaskForm,
   LeftColumn,
   RightColumn,
+  FieldGroup,
   Input,
   Textarea,
+  FieldError,
   CategoryLabel,
   CategoryList,
   CategoryButton,
@@ -39,36 +49,6 @@ const categories = [
   { value: "Copywriting", label: "Copywriting", variant: "purple" },
 ];
 
-const WEEK_DAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
-
-const MONTHS = [
-  "Январь",
-  "Февраль",
-  "Март",
-  "Апрель",
-  "Май",
-  "Июнь",
-  "Июль",
-  "Август",
-  "Сентябрь",
-  "Октябрь",
-  "Ноябрь",
-  "Декабрь",
-];
-
-const pad = (value) => String(value).padStart(2, "0");
-
-const toInputDate = (year, month, day) =>
-  `${year}-${pad(month + 1)}-${pad(day)}`;
-
-const parseDate = (value) => {
-  if (!value) return null;
-
-  const [year, month, day] = value.split("-").map(Number);
-
-  return new Date(year, month - 1, day);
-};
-
 function AddTaskPage({ isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
 
@@ -79,31 +59,20 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
 
-  const [calendarDate, setCalendarDate] = useState(new Date(2023, 8, 1));
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    title: "",
+    description: "",
+    date: "",
+  });
+  const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const calendarDays = useMemo(() => {
-    const year = calendarDate.getFullYear();
-    const month = calendarDate.getMonth();
-
-    const firstDay = new Date(year, month, 1).getDay();
-    const mondayOffset = (firstDay + 6) % 7;
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    const days = [];
-
-    for (let index = 0; index < mondayOffset; index += 1) {
-      days.push(null);
-    }
-
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      days.push(day);
-    }
-
-    return days;
-  }, [calendarDate]);
+  const calendarDays = useMemo(
+    () => getCalendarDays(calendarDate),
+    [calendarDate],
+  );
 
   const selectedDate = parseDate(date);
 
@@ -136,31 +105,25 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
     );
 
     setDate(selected);
-    setError("");
+    setFieldErrors((prev) => ({ ...prev, date: "" }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setError("");
+    if (loading) return;
 
-    if (!title.trim()) {
-      setError("Введите название задачи.");
-      return;
-    }
+    setFormError("");
 
-    if (!topic.trim()) {
-      setError("Выберите категорию задачи.");
-      return;
-    }
+    const errors = {
+      title: title.trim() ? "" : "Введите название задачи",
+      description: description.trim() ? "" : "Введите описание задачи",
+      date: date ? "" : "Выберите дату",
+    };
 
-    if (!description.trim()) {
-      setError("Введите описание задачи.");
-      return;
-    }
+    setFieldErrors(errors);
 
-    if (!date) {
-      setError("Выберите дату.");
+    if (errors.title || errors.description || errors.date) {
       return;
     }
 
@@ -169,7 +132,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
 
       await addTask({
         title: title.trim(),
-        topic: topic.trim(),
+        topic,
         status: "Без статуса",
         description: description.trim(),
         date,
@@ -177,14 +140,7 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
 
       navigate("/");
     } catch (requestError) {
-      console.error("Ошибка создания задачи:", requestError);
-
-      if (requestError.response?.status === 401) {
-        setError("Сессия закончилась. Войдите в аккаунт снова.");
-      } else {
-        setError("Не удалось создать задачу.");
-      }
-    } finally {
+      setFormError(getErrorMessage(requestError, "Не удалось создать задачу."));
       setLoading(false);
     }
   };
@@ -198,47 +154,67 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
           <PageModal>
             <PageTitle>Создание задачи</PageTitle>
 
-            <TaskForm onSubmit={handleSubmit}>
+            <TaskForm onSubmit={handleSubmit} noValidate>
               <LeftColumn>
-                <FieldLabel>Название задачи</FieldLabel>
+                <FieldGroup $order={1}>
+                  <FieldLabel htmlFor="task-title">Название задачи</FieldLabel>
 
-                <Input
-                  type="text"
-                  placeholder="Введите название задачи..."
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                />
+                  <Input
+                    id="task-title"
+                    type="text"
+                    placeholder="Введите название задачи..."
+                    value={title}
+                    $error={Boolean(fieldErrors.title)}
+                    onChange={(event) => {
+                      setTitle(event.target.value);
+                      setFieldErrors((prev) => ({ ...prev, title: "" }));
+                    }}
+                  />
+                  {fieldErrors.title && (
+                    <FieldError>{fieldErrors.title}</FieldError>
+                  )}
+                </FieldGroup>
 
-                <FieldLabel>Описание задачи</FieldLabel>
+                <FieldGroup $order={2}>
+                  <FieldLabel htmlFor="task-description">
+                    Описание задачи
+                  </FieldLabel>
 
-                <Textarea
-                  placeholder="Введите описание задачи..."
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                />
+                  <Textarea
+                    id="task-description"
+                    placeholder="Введите описание задачи..."
+                    value={description}
+                    onChange={(event) => {
+                      setDescription(event.target.value);
+                      setFieldErrors((prev) => ({ ...prev, description: "" }));
+                    }}
+                  />
+                  {fieldErrors.description && (
+                    <FieldError>{fieldErrors.description}</FieldError>
+                  )}
+                </FieldGroup>
 
-                <CategoryLabel>Категория</CategoryLabel>
+                <FieldGroup $order={4}>
+                  <CategoryLabel as="div">Категория</CategoryLabel>
 
-                <CategoryList>
-                  {categories.map((category) => (
-                    <CategoryButton
-                      key={category.value}
-                      type="button"
-                      $variant={category.variant}
-                      $active={topic === category.value}
-                      onClick={() => {
-                        setTopic(category.value);
-                        setError("");
-                      }}
-                    >
-                      {category.label}
-                    </CategoryButton>
-                  ))}
-                </CategoryList>
+                  <CategoryList>
+                    {categories.map((category) => (
+                      <CategoryButton
+                        key={category.value}
+                        type="button"
+                        $variant={category.variant}
+                        $active={topic === category.value}
+                        onClick={() => setTopic(category.value)}
+                      >
+                        {category.label}
+                      </CategoryButton>
+                    ))}
+                  </CategoryList>
+                </FieldGroup>
               </LeftColumn>
 
               <RightColumn>
-                <FieldLabel>Даты</FieldLabel>
+                <FieldLabel as="div">Даты</FieldLabel>
 
                 <Calendar>
                   <CalendarHeader>
@@ -288,14 +264,18 @@ function AddTaskPage({ isDarkMode, setIsDarkMode }) {
                   </CalendarGrid>
                 </Calendar>
 
-                <CalendarHint>Выберите срок исполнения.</CalendarHint>
+                {fieldErrors.date ? (
+                  <FieldError>{fieldErrors.date}</FieldError>
+                ) : (
+                  <CalendarHint>Выберите срок исполнения.</CalendarHint>
+                )}
               </RightColumn>
 
               <FormFooter>
-                {error && <ErrorMessage>{error}</ErrorMessage>}
+                {formError && <ErrorMessage>{formError}</ErrorMessage>}
 
                 <SaveButton type="submit" disabled={loading}>
-                  {loading ? "Создание..." : "Создать задачу"}
+                  Создать задачу
                 </SaveButton>
               </FormFooter>
             </TaskForm>

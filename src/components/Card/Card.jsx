@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+import { formatDateShort } from "../../utils/calendar";
+
 import {
   CardsItem,
   CardsCard,
@@ -12,6 +14,7 @@ import {
 } from "./Card.styled";
 
 const colorsTopics = {
+  "Web Design": "orange",
   Design: "purple",
   Testing: "green",
   Development: "orange",
@@ -53,7 +56,7 @@ export function Card({
 }) {
   const actualTheme = colorsTopics[topic] || "green";
 
-  const formattedDate = date ? new Date(date).toLocaleDateString("ru-RU") : "";
+  const formattedDate = formatDateShort(date);
 
   return (
     <CardsItem>

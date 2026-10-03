@@ -3,6 +3,15 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Header from "../components/Header/Header";
 import TaskContext from "../context/TaskContext";
+import { getErrorMessage } from "../utils/getErrorMessage";
+import {
+  MONTHS,
+  WEEK_DAYS,
+  formatDateShort,
+  getCalendarDays,
+  parseDate,
+  toInputDate,
+} from "../utils/calendar";
 
 import {
   Page,
@@ -11,23 +20,28 @@ import {
   EditModal,
   TopRow,
   TitleEditor,
+  DesktopOnly,
   StatusLabel,
   StatusList,
   StatusButton,
   ContentGrid,
   DescriptionLabel,
-  EditTextarea,
+  Textarea,
   DateLabel,
-  EditCalendar,
-  EditCalendarHeader,
-  EditCalendarMonth,
-  EditCalendarArrow,
-  EditWeekDays,
-  EditWeekDay,
-  EditCalendarGrid,
-  EditDayButton,
-  EditCalendarHint,
+  Calendar,
+  CalendarHeader,
+  CalendarMonth,
+  CalendarArrow,
+  WeekDays,
+  WeekDay,
+  CalendarGrid,
+  DayButton,
+  CalendarHint,
+  FieldError,
   ErrorText,
+  CategorySection,
+  CategoryLabel,
+  CategoryButton,
   BottomRow,
   LeftButtons,
   SmallButton,
@@ -36,7 +50,6 @@ import {
   CloseButton,
   PageTitle,
   Description,
-  CategoryButton,
 } from "./pages.styled";
 
 const categories = [
@@ -53,143 +66,54 @@ const statuses = [
   "Готово",
 ];
 
-const WEEK_DAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
+const getInitialValues = (task) => {
+  const date = task.date ? task.date.slice(0, 10) : "";
+  const parsedDate = parseDate(date);
 
-const MONTHS = [
-  "Январь",
-  "Февраль",
-  "Март",
-  "Апрель",
-  "Май",
-  "Июнь",
-  "Июль",
-  "Август",
-  "Сентябрь",
-  "Октябрь",
-  "Ноябрь",
-  "Декабрь",
-];
-
-const pad = (value) => String(value).padStart(2, "0");
-
-const toInputDate = (year, month, day) =>
-  `${year}-${pad(month + 1)}-${pad(day)}`;
-
-const parseDate = (value) => {
-  if (!value) return null;
-
-  const [year, month, day] = value.split("-").map(Number);
-
-  if (!year || !month || !day) {
-    return null;
-  }
-
-  return new Date(year, month - 1, day);
+  return {
+    title: task.title || "",
+    status: task.status || "Без статуса",
+    description: task.description || "",
+    date,
+    calendarDate: parsedDate
+      ? new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1)
+      : new Date(),
+  };
 };
 
-function CardPage({ isDarkMode, setIsDarkMode }) {
-  const { id } = useParams();
+/* Просмотр и редактирование задачи. Данные берутся из уже загруженных задач,
+   поэтому окно открывается сразу — без экрана «Загрузка…». */
+function TaskDetails({ task, isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
 
-  const { fetchTasks, editTask, removeTask } = useContext(TaskContext);
+  const { editTask, removeTask } = useContext(TaskContext);
 
-  const [task, setTask] = useState(null);
+  const initial = getInitialValues(task);
 
-  const [title, setTitle] = useState("");
-  const [topic, setTopic] = useState("Research");
-  const [status, setStatus] = useState("Без статуса");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [calendarDate, setCalendarDate] = useState(new Date(2023, 8, 1));
+  const [title, setTitle] = useState(initial.title);
+  const [status, setStatus] = useState(initial.status);
+  const [description, setDescription] = useState(initial.description);
+  const [date, setDate] = useState(initial.date);
 
-  const [loading, setLoading] = useState(true);
+  const [calendarDate, setCalendarDate] = useState(initial.calendarDate);
+
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState("");
 
-  /*
-   * Загрузка задачи через TaskContext
-   */
-  useEffect(() => {
-    let ignore = false;
+  const [fieldErrors, setFieldErrors] = useState({
+    title: "",
+    description: "",
+  });
+  const [formError, setFormError] = useState("");
 
-    async function loadTask() {
-      try {
-        setLoading(true);
-        setError("");
+  const busy = saving || deleting;
 
-        const loadedTasks = await fetchTasks();
-
-        if (ignore) return;
-
-        const loadedTask = loadedTasks.find((item) => item._id === id);
-
-        if (!loadedTask) {
-          setError("Задача не найдена.");
-          return;
-        }
-
-        setTask(loadedTask);
-
-        setTitle(loadedTask.title || "");
-        setTopic(loadedTask.topic || "Research");
-        setStatus(loadedTask.status || "Без статуса");
-        setDescription(loadedTask.description || "");
-
-        if (loadedTask.date) {
-          const normalizedDate = loadedTask.date.slice(0, 10);
-
-          setDate(normalizedDate);
-
-          const loadedDate = parseDate(normalizedDate);
-
-          if (loadedDate) {
-            setCalendarDate(
-              new Date(loadedDate.getFullYear(), loadedDate.getMonth(), 1),
-            );
-          }
-        }
-      } catch (requestError) {
-        if (ignore) return;
-
-        console.error("Ошибка загрузки задачи:", requestError);
-
-        setError("Не удалось загрузить задачу.");
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadTask();
-
-    return () => {
-      ignore = true;
-    };
-  }, [id, fetchTasks]);
-
-  const calendarDays = useMemo(() => {
-    const year = calendarDate.getFullYear();
-    const month = calendarDate.getMonth();
-
-    const firstDay = new Date(year, month, 1).getDay();
-    const mondayOffset = (firstDay + 6) % 7;
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    const days = [];
-
-    for (let index = 0; index < mondayOffset; index += 1) {
-      days.push(null);
-    }
-
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      days.push(day);
-    }
-
-    return days;
-  }, [calendarDate]);
+  const calendarDays = useMemo(
+    () => getCalendarDays(calendarDate),
+    [calendarDate],
+  );
 
   const selectedDate = parseDate(date);
 
@@ -213,67 +137,75 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
   };
 
   const handleDateSelect = (day) => {
-    if (!day) return;
+    if (!day || !isEditing) return;
 
-    const selected = toInputDate(
-      calendarDate.getFullYear(),
-      calendarDate.getMonth(),
-      day,
+    setDate(
+      toInputDate(calendarDate.getFullYear(), calendarDate.getMonth(), day),
     );
-
-    setDate(selected);
-    setError("");
   };
 
   const currentCategory =
-    categories.find((category) => category.value === topic) || categories[1];
+    categories.find((category) => category.value === task.topic) ||
+    categories[1];
+
+  const handleStartEdit = () => {
+    setFormError("");
+    setIsEditing(true);
+  };
+
+  // «Отменить»: откатываем изменения и возвращаемся к просмотру
+  const handleCancelEdit = () => {
+    const values = getInitialValues(task);
+
+    setTitle(values.title);
+    setStatus(values.status);
+    setDescription(values.description);
+    setDate(values.date);
+    setCalendarDate(values.calendarDate);
+
+    setFieldErrors({ title: "", description: "" });
+    setFormError("");
+    setIsEditing(false);
+  };
+
+  const handleClose = () => {
+    navigate("/");
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setError("");
+    if (!isEditing || busy) return;
 
-    if (!title.trim()) {
-      setError("Введите название задачи.");
-      return;
-    }
+    setFormError("");
 
-    if (!topic.trim()) {
-      setError("Выберите категорию задачи.");
-      return;
-    }
+    const errors = {
+      title: title.trim() ? "" : "Введите название задачи",
+      description: description.trim() ? "" : "Введите описание задачи",
+    };
 
-    if (!status.trim()) {
-      setError("Выберите статус задачи.");
-      return;
-    }
+    setFieldErrors(errors);
 
-    if (!description.trim()) {
-      setError("Введите описание задачи.");
+    if (errors.title || errors.description) {
       return;
     }
 
     try {
       setSaving(true);
 
-      await editTask(id, {
+      await editTask(task._id, {
         title: title.trim(),
-        topic: topic.trim(),
-        status: status.trim(),
+        topic: task.topic || currentCategory.value,
+        status,
         description: description.trim(),
-        date: date || task?.date || "",
+        date: date || task.date || "",
       });
 
       navigate("/");
     } catch (requestError) {
-      console.error("Ошибка обновления задачи:", requestError);
-
-      if (requestError.response?.status === 401) {
-        setError("Сессия закончилась. Войдите в аккаунт снова.");
-      } else {
-        setError("Не удалось сохранить изменения.");
-      }
-    } finally {
+      setFormError(
+        getErrorMessage(requestError, "Не удалось сохранить изменения."),
+      );
       setSaving(false);
     }
   };
@@ -289,57 +221,289 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
 
     try {
       setDeleting(true);
-      setError("");
+      setFormError("");
 
-      await removeTask(id);
+      await removeTask(task._id);
 
       navigate("/");
     } catch (requestError) {
-      console.error("Ошибка удаления задачи:", requestError);
-
-      setError("Не удалось удалить задачу.");
-    } finally {
+      setFormError(getErrorMessage(requestError, "Не удалось удалить задачу."));
       setDeleting(false);
     }
   };
 
-  const handleCancel = () => {
-    navigate("/");
-  };
+  return (
+    <Page>
+      <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
-  if (loading) {
+      <Overlay>
+        <CenterPage>
+          <EditModal>
+            <form onSubmit={handleSubmit} noValidate>
+              <TopRow>
+                <TitleEditor
+                  type="text"
+                  value={title}
+                  readOnly={!isEditing}
+                  placeholder="Название задачи"
+                  aria-label="Название задачи"
+                  onChange={(event) => {
+                    setTitle(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, title: "" }));
+                  }}
+                />
+
+                <DesktopOnly>
+                  <CategoryButton
+                    type="button"
+                    $variant={currentCategory.variant}
+                    $active
+                  >
+                    {currentCategory.label}
+                  </CategoryButton>
+                </DesktopOnly>
+              </TopRow>
+              {fieldErrors.title && (
+                <FieldError>{fieldErrors.title}</FieldError>
+              )}
+
+              <StatusLabel>Статус</StatusLabel>
+
+              <StatusList>
+                {isEditing ? (
+                  statuses.map((item) => (
+                    <StatusButton
+                      key={item}
+                      type="button"
+                      $active={status === item}
+                      onClick={() => setStatus(item)}
+                    >
+                      {item}
+                    </StatusButton>
+                  ))
+                ) : (
+                  <StatusButton type="button" $active disabled>
+                    {status}
+                  </StatusButton>
+                )}
+              </StatusList>
+
+              <ContentGrid>
+                <div>
+                  <DescriptionLabel>Описание задачи</DescriptionLabel>
+
+                  <Textarea
+                    $compact
+                    $readOnly={!isEditing}
+                    readOnly={!isEditing}
+                    placeholder="Введите описание задачи..."
+                    aria-label="Описание задачи"
+                    value={description}
+                    onChange={(event) => {
+                      setDescription(event.target.value);
+                      setFieldErrors((prev) => ({ ...prev, description: "" }));
+                    }}
+                  />
+                  {fieldErrors.description && (
+                    <FieldError>{fieldErrors.description}</FieldError>
+                  )}
+                </div>
+
+                <div>
+                  <DateLabel>Даты</DateLabel>
+
+                  <Calendar>
+                    <CalendarHeader>
+                      <CalendarMonth>
+                        {MONTHS[calendarDate.getMonth()]}{" "}
+                        {calendarDate.getFullYear()}
+                      </CalendarMonth>
+
+                      <div>
+                        <CalendarArrow
+                          type="button"
+                          aria-label="Предыдущий месяц"
+                          onClick={() => changeMonth(-1)}
+                        >
+                          ‹
+                        </CalendarArrow>
+
+                        <CalendarArrow
+                          type="button"
+                          aria-label="Следующий месяц"
+                          onClick={() => changeMonth(1)}
+                        >
+                          ›
+                        </CalendarArrow>
+                      </div>
+                    </CalendarHeader>
+
+                    <WeekDays>
+                      {WEEK_DAYS.map((day) => (
+                        <WeekDay key={day}>{day}</WeekDay>
+                      ))}
+                    </WeekDays>
+
+                    <CalendarGrid>
+                      {calendarDays.map((day, index) => (
+                        <DayButton
+                          key={`${calendarDate.getFullYear()}-${calendarDate.getMonth()}-${index}`}
+                          type="button"
+                          $empty={!day}
+                          $selected={isSelectedDay(day)}
+                          onClick={() => handleDateSelect(day)}
+                          disabled={!day || !isEditing}
+                        >
+                          {day || ""}
+                        </DayButton>
+                      ))}
+                    </CalendarGrid>
+                  </Calendar>
+
+                  <CalendarHint>
+                    Срок исполнения:{" "}
+                    <b>{date ? formatDateShort(date) : "не выбран"}</b>
+                  </CalendarHint>
+                </div>
+              </ContentGrid>
+
+              <CategorySection>
+                <CategoryLabel as="div">Категория</CategoryLabel>
+
+                <CategoryButton
+                  type="button"
+                  $variant={currentCategory.variant}
+                  $active
+                >
+                  {currentCategory.label}
+                </CategoryButton>
+              </CategorySection>
+
+              {formError && <ErrorText>{formError}</ErrorText>}
+
+              <BottomRow>
+                {isEditing ? (
+                  <>
+                    <LeftButtons>
+                      <SaveButton type="submit" $order={1} disabled={busy}>
+                        Сохранить
+                      </SaveButton>
+
+                      <SmallButton
+                        type="button"
+                        $order={3}
+                        onClick={handleCancelEdit}
+                        disabled={busy}
+                      >
+                        Отменить
+                      </SmallButton>
+
+                      <DeleteButton
+                        type="button"
+                        $order={4}
+                        onClick={handleDelete}
+                        disabled={busy}
+                      >
+                        Удалить задачу
+                      </DeleteButton>
+                    </LeftButtons>
+
+                    <CloseButton
+                      type="button"
+                      $order={2}
+                      onClick={handleClose}
+                      disabled={busy}
+                    >
+                      Закрыть
+                    </CloseButton>
+                  </>
+                ) : (
+                  <>
+                    <LeftButtons>
+                      <SmallButton
+                        type="button"
+                        $order={1}
+                        onClick={handleStartEdit}
+                        disabled={busy}
+                      >
+                        Редактировать задачу
+                      </SmallButton>
+
+                      <DeleteButton
+                        type="button"
+                        $order={2}
+                        onClick={handleDelete}
+                        disabled={busy}
+                      >
+                        Удалить задачу
+                      </DeleteButton>
+                    </LeftButtons>
+
+                    <CloseButton
+                      type="button"
+                      $order={3}
+                      onClick={handleClose}
+                      disabled={busy}
+                    >
+                      Закрыть
+                    </CloseButton>
+                  </>
+                )}
+              </BottomRow>
+            </form>
+          </EditModal>
+        </CenterPage>
+      </Overlay>
+    </Page>
+  );
+}
+
+function CardPage({ isDarkMode, setIsDarkMode }) {
+  const { id } = useParams();
+
+  const { tasks, fetchTasks } = useContext(TaskContext);
+
+  const [loadError, setLoadError] = useState("");
+
+  const task = tasks.find((item) => item._id === id);
+  const hasTask = Boolean(task);
+
+  // Если задач ещё нет в памяти (страница открыта по прямой ссылке или
+  // после обновления), тихо подгружаем их — без спиннера и текста «Загрузка»
+  useEffect(() => {
+    if (hasTask) return undefined;
+
+    let ignore = false;
+
+    fetchTasks()
+      .then((loadedTasks) => {
+        if (ignore) return;
+
+        if (!loadedTasks.some((item) => item._id === id)) {
+          setLoadError("Задача не найдена.");
+        }
+      })
+      .catch((requestError) => {
+        if (ignore) return;
+
+        setLoadError(
+          getErrorMessage(requestError, "Не удалось загрузить задачу."),
+        );
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [id, hasTask, fetchTasks]);
+
+  if (task) {
     return (
-      <Page>
-        <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-
-        <Overlay>
-          <CenterPage>
-            <EditModal>
-              <PageTitle>Загрузка...</PageTitle>
-            </EditModal>
-          </CenterPage>
-        </Overlay>
-      </Page>
-    );
-  }
-
-  if (error && !task) {
-    return (
-      <Page>
-        <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-
-        <Overlay>
-          <CenterPage>
-            <EditModal>
-              <PageTitle>Задача не найдена</PageTitle>
-
-              <Description>{error}</Description>
-
-              <Link to="/">Вернуться на доску</Link>
-            </EditModal>
-          </CenterPage>
-        </Overlay>
-      </Page>
+      <TaskDetails
+        key={task._id}
+        task={task}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+      />
     );
   }
 
@@ -350,145 +514,17 @@ function CardPage({ isDarkMode, setIsDarkMode }) {
       <Overlay>
         <CenterPage>
           <EditModal>
-            <form onSubmit={handleSubmit}>
-              <TopRow>
-                <TitleEditor
-                  type="text"
-                  value={title}
-                  placeholder="Название задачи"
-                  onChange={(event) => setTitle(event.target.value)}
-                />
+            {loadError && (
+              <>
+                <PageTitle>Задача не найдена</PageTitle>
 
-                <CategoryButton
-                  type="button"
-                  $variant={currentCategory.variant}
-                  $active
-                >
-                  {currentCategory.label}
-                </CategoryButton>
-              </TopRow>
+                <Description>{loadError}</Description>
 
-              <StatusLabel>Статус</StatusLabel>
-
-              <StatusList>
-                {statuses.map((item) => (
-                  <StatusButton
-                    key={item}
-                    type="button"
-                    $active={status === item}
-                    onClick={() => {
-                      setStatus(item);
-                      setError("");
-                    }}
-                  >
-                    {item}
-                  </StatusButton>
-                ))}
-              </StatusList>
-
-              <ContentGrid>
-                <div>
-                  <DescriptionLabel>Описание задачи</DescriptionLabel>
-
-                  <EditTextarea
-                    placeholder="Введите описание задачи..."
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <DateLabel>Даты</DateLabel>
-
-                  <EditCalendar>
-                    <EditCalendarHeader>
-                      <EditCalendarMonth>
-                        {MONTHS[calendarDate.getMonth()]}{" "}
-                        {calendarDate.getFullYear()}
-                      </EditCalendarMonth>
-
-                      <div>
-                        <EditCalendarArrow
-                          type="button"
-                          aria-label="Предыдущий месяц"
-                          onClick={() => changeMonth(-1)}
-                        >
-                          ‹
-                        </EditCalendarArrow>
-
-                        <EditCalendarArrow
-                          type="button"
-                          aria-label="Следующий месяц"
-                          onClick={() => changeMonth(1)}
-                        >
-                          ›
-                        </EditCalendarArrow>
-                      </div>
-                    </EditCalendarHeader>
-
-                    <EditWeekDays>
-                      {WEEK_DAYS.map((day) => (
-                        <EditWeekDay key={day}>{day}</EditWeekDay>
-                      ))}
-                    </EditWeekDays>
-
-                    <EditCalendarGrid>
-                      {calendarDays.map((day, index) => (
-                        <EditDayButton
-                          key={`${calendarDate.getFullYear()}-${calendarDate.getMonth()}-${index}`}
-                          type="button"
-                          $empty={!day}
-                          $selected={isSelectedDay(day)}
-                          onClick={() => handleDateSelect(day)}
-                          disabled={!day}
-                        >
-                          {day || ""}
-                        </EditDayButton>
-                      ))}
-                    </EditCalendarGrid>
-                  </EditCalendar>
-
-                  <EditCalendarHint>
-                    Срок исполнения:{" "}
-                    {date ? date.split("-").reverse().join(".") : "не выбран"}
-                  </EditCalendarHint>
-                </div>
-              </ContentGrid>
-
-              {error && <ErrorText>{error}</ErrorText>}
-
-              <BottomRow>
-                <LeftButtons>
-                  <SaveButton type="submit" disabled={saving || deleting}>
-                    {saving ? "Сохранение..." : "Сохранить"}
-                  </SaveButton>
-
-                  <SmallButton
-                    type="button"
-                    onClick={handleCancel}
-                    disabled={saving || deleting}
-                  >
-                    Отменить
-                  </SmallButton>
-
-                  <DeleteButton
-                    type="button"
-                    onClick={handleDelete}
-                    disabled={saving || deleting}
-                  >
-                    {deleting ? "Удаление..." : "Удалить задачу"}
-                  </DeleteButton>
-                </LeftButtons>
-
-                <CloseButton
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={saving || deleting}
-                >
-                  Закрыть
-                </CloseButton>
-              </BottomRow>
-            </form>
+                <Description>
+                  <Link to="/">Вернуться на доску</Link>
+                </Description>
+              </>
+            )}
           </EditModal>
         </CenterPage>
       </Overlay>
